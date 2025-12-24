@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Car, MapPin, Calendar, Clock, Star, Phone, Mail, CheckCircle, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Car, MapPin, Calendar, Clock, Star, Phone, CheckCircle, MessageSquare, ThumbsUp } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -47,6 +47,13 @@ interface Job {
   status: JobStatus;
   created_at: string;
   needed_by: string | null;
+}
+
+interface Review {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
 }
 
 const statusConfig: Record<JobStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -121,6 +128,23 @@ const JobDetails = () => {
     enabled: !!id && !!user,
   });
 
+  const { data: existingReview } = useQuery({
+    queryKey: ['job-review', id],
+    queryFn: async () => {
+      if (!id) return null;
+      
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('job_id', id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as Review | null;
+    },
+    enabled: !!id && !!user,
+  });
+
   const acceptQuoteMutation = useMutation({
     mutationFn: async (quoteId: string) => {
       // Update the selected quote to accepted
@@ -160,6 +184,32 @@ const JobDetails = () => {
       toast({
         title: 'Eroare',
         description: 'Nu am putut accepta oferta. Încercați din nou.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const markCompletedMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('jobs')
+        .update({ status: 'completed' })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['job', id] });
+      queryClient.invalidateQueries({ queryKey: ['user-jobs'] });
+      toast({
+        title: 'Lucrare finalizată!',
+        description: 'Poți acum lăsa o recenzie pentru service.',
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Eroare',
+        description: 'Nu am putut actualiza statusul. Încercați din nou.',
         variant: 'destructive',
       });
     },
@@ -206,7 +256,7 @@ const JobDetails = () => {
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Job Details */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 space-y-4">
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -259,6 +309,73 @@ const JobDetails = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Action Buttons */}
+              {job.status === 'booked' && (
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Lucrarea a fost finalizată? Marchează ca finalizată pentru a putea lăsa o recenzie.
+                    </p>
+                    <Button 
+                      className="w-full" 
+                      onClick={() => markCompletedMutation.mutate()}
+                      disabled={markCompletedMutation.isPending}
+                    >
+                      <ThumbsUp className="mr-2 h-4 w-4" />
+                      {markCompletedMutation.isPending ? 'Se procesează...' : 'Marchează ca finalizată'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+              {job.status === 'completed' && !existingReview && (
+                <Card className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Star className="h-5 w-5 text-amber-500" />
+                      <p className="font-medium">Lasă o recenzie</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Spune-ne cum a fost experiența ta cu service-ul.
+                    </p>
+                    <Button 
+                      className="w-full" 
+                      variant="default"
+                      onClick={() => navigate(`/cereri/${id}/recenzie`)}
+                    >
+                      <Star className="mr-2 h-4 w-4" />
+                      Scrie o recenzie
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+              {existingReview && (
+                <Card className="border-green-500 bg-green-50 dark:bg-green-950/20">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <p className="font-medium text-green-700 dark:text-green-300">Recenzie publicată</p>
+                    </div>
+                    <div className="flex gap-1 mb-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-5 w-5 ${
+                            star <= existingReview.rating
+                              ? 'fill-amber-400 text-amber-400'
+                              : 'text-muted-foreground'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    {existingReview.comment && (
+                      <p className="text-sm text-muted-foreground italic">"{existingReview.comment}"</p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Quotes Section */}
