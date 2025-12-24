@@ -100,6 +100,10 @@ const Header = () => {
                   {userType === 'garage' ? <Wrench className="mr-2 h-4 w-4" /> : <User className="mr-2 h-4 w-4" />}
                   {getDashboardLabel()}
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/profil')}>
+                  <User className="mr-2 h-4 w-4" />
+                  Profil
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
@@ -149,6 +153,10 @@ const Header = () => {
                   <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate(getDashboardPath()); }}>
                     {userType === 'garage' ? <Wrench className="mr-2 h-4 w-4" /> : <User className="mr-2 h-4 w-4" />}
                     {getDashboardLabel()}
+                  </Button>
+                  <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/profil'); }}>
+                    <User className="mr-2 h-4 w-4" />
+                    Profil
                   </Button>
                   <Button variant="ghost" className="w-full text-destructive" onClick={() => { setIsMenuOpen(false); handleSignOut(); }}>
                     <LogOut className="mr-2 h-4 w-4" />

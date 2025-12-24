@@ -13,6 +13,7 @@ import JobDetails from "./pages/JobDetails";
 import GarageDashboard from "./pages/GarageDashboard";
 import GarageJobDetails from "./pages/GarageJobDetails";
 import ReviewPage from "./pages/ReviewPage";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/cereri/:jobId/recenzie" element={<ReviewPage />} />
             <Route path="/service" element={<GarageDashboard />} />
             <Route path="/service/cereri/:id" element={<GarageJobDetails />} />
+            <Route path="/profil" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
