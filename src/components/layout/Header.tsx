@@ -1,11 +1,20 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Car } from "lucide-react";
+import { Menu, X, Car, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const navLinks = [
     { href: "/", label: "Acasă" },
@@ -13,6 +22,11 @@ const Header = () => {
     { href: "#pentru-garaje", label: "Pentru Garaje" },
     { href: "#contact", label: "Contact" },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b border-border">
@@ -42,9 +56,31 @@ const Header = () => {
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm">
-            Autentificare
-          </Button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <User className="h-4 w-4" />
+                  Contul meu
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => navigate('/contul-meu')}>
+                  <User className="mr-2 h-4 w-4" />
+                  Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Deconectare
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button variant="ghost" size="sm" onClick={() => navigate('/autentificare')}>
+              Autentificare
+            </Button>
+          )}
           <Button variant="accent" size="sm" onClick={() => navigate("/cerere")}>
             Solicită Oferte
           </Button>
@@ -75,9 +111,22 @@ const Header = () => {
               </a>
             ))}
             <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
-              <Button variant="outline" className="w-full">
-                Autentificare
-              </Button>
+              {user ? (
+                <>
+                  <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/contul-meu'); }}>
+                    <User className="mr-2 h-4 w-4" />
+                    Contul meu
+                  </Button>
+                  <Button variant="ghost" className="w-full text-destructive" onClick={() => { setIsMenuOpen(false); handleSignOut(); }}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Deconectare
+                  </Button>
+                </>
+              ) : (
+                <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/autentificare'); }}>
+                  Autentificare
+                </Button>
+              )}
               <Button variant="accent" className="w-full" onClick={() => { setIsMenuOpen(false); navigate("/cerere"); }}>
                 Solicită Oferte
               </Button>

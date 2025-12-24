@@ -14,16 +14,299 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string
+          payment_intent_id: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          quote_id: string
+          scheduled_date: string
+          scheduled_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id: string
+          payment_intent_id?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          quote_id: string
+          scheduled_date: string
+          scheduled_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string
+          payment_intent_id?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          quote_id?: string
+          scheduled_date?: string
+          scheduled_time?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          car_make: string
+          car_model: string
+          car_year: number | null
+          category: string
+          city: string
+          county: string
+          created_at: string
+          description: string
+          fuel_type: string | null
+          id: string
+          needed_by: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          updated_at: string
+          urgency: string | null
+          user_id: string
+        }
+        Insert: {
+          car_make: string
+          car_model: string
+          car_year?: number | null
+          category: string
+          city: string
+          county: string
+          created_at?: string
+          description: string
+          fuel_type?: string | null
+          id?: string
+          needed_by?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          updated_at?: string
+          urgency?: string | null
+          user_id: string
+        }
+        Update: {
+          car_make?: string
+          car_model?: string
+          car_year?: number | null
+          category?: string
+          city?: string
+          county?: string
+          created_at?: string
+          description?: string
+          fuel_type?: string | null
+          id?: string
+          needed_by?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          updated_at?: string
+          urgency?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          average_rating: number | null
+          business_address: string | null
+          business_name: string | null
+          city: string | null
+          county: string | null
+          created_at: string
+          description: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          rar_authorization: string | null
+          total_reviews: number | null
+          updated_at: string
+          user_id: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Insert: {
+          avatar_url?: string | null
+          average_rating?: number | null
+          business_address?: string | null
+          business_name?: string | null
+          city?: string | null
+          county?: string | null
+          created_at?: string
+          description?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          rar_authorization?: string | null
+          total_reviews?: number | null
+          updated_at?: string
+          user_id: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Update: {
+          avatar_url?: string | null
+          average_rating?: number | null
+          business_address?: string | null
+          business_name?: string | null
+          city?: string | null
+          county?: string | null
+          created_at?: string
+          description?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          rar_authorization?: string | null
+          total_reviews?: number | null
+          updated_at?: string
+          user_id?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Relationships: []
+      }
+      quotes: {
+        Row: {
+          created_at: string
+          estimated_days: number | null
+          garage_id: string
+          id: string
+          job_id: string
+          message: string | null
+          price: number
+          status: Database["public"]["Enums"]["quote_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estimated_days?: number | null
+          garage_id: string
+          id?: string
+          job_id: string
+          message?: string | null
+          price: number
+          status?: Database["public"]["Enums"]["quote_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estimated_days?: number | null
+          garage_id?: string
+          id?: string
+          job_id?: string
+          message?: string | null
+          price?: number
+          status?: Database["public"]["Enums"]["quote_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          customer_id: string
+          garage_id: string
+          id: string
+          job_id: string
+          rating: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          customer_id: string
+          garage_id: string
+          id?: string
+          job_id: string
+          rating: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          customer_id?: string
+          garage_id?: string
+          id?: string
+          job_id?: string
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_type: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["user_type"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      job_status:
+        | "open"
+        | "quotes_provided"
+        | "booked"
+        | "completed"
+        | "cancelled"
+      payment_status: "pending" | "paid" | "refunded"
+      quote_status: "sent" | "accepted" | "rejected"
+      user_type: "customer" | "garage"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +433,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      job_status: [
+        "open",
+        "quotes_provided",
+        "booked",
+        "completed",
+        "cancelled",
+      ],
+      payment_status: ["pending", "paid", "refunded"],
+      quote_status: ["sent", "accepted", "rejected"],
+      user_type: ["customer", "garage"],
+    },
   },
 } as const
