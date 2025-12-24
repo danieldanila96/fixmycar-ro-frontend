@@ -1,7 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const CTASection = () => {
+  const navigate = useNavigate();
   const benefits = [
     "100% gratuit pentru șoferi",
     "Fără obligații",
@@ -39,7 +41,7 @@ const CTASection = () => {
             </div>
 
             {/* CTA Button */}
-            <Button variant="hero" size="xl" className="group">
+            <Button variant="hero" size="xl" className="group" onClick={() => navigate("/cerere")}>
               Solicită Oferte Gratuit
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>

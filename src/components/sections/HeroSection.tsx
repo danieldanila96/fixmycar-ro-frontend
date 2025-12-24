@@ -1,7 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, Shield, Clock, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const features = [
     { icon: Shield, text: "Service-uri verificate" },
     { icon: Clock, text: "Răspuns rapid" },
@@ -49,13 +51,15 @@ const HeroSection = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-up animation-delay-300">
-            <Button variant="hero" size="xl" className="group">
+            <Button variant="hero" size="xl" className="group" onClick={() => navigate("/cerere")}>
               Solicită Oferte Gratuit
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
-            <Button variant="hero-outline" size="xl">
-              Cum funcționează
-            </Button>
+            <a href="#cum-functioneaza">
+              <Button variant="hero-outline" size="xl">
+                Cum funcționează
+              </Button>
+            </a>
           </div>
 
           {/* Trust Features */}

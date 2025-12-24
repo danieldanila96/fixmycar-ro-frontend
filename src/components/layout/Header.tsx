@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const navLinks = [
     { href: "/", label: "Acasă" },
@@ -44,7 +45,7 @@ const Header = () => {
           <Button variant="ghost" size="sm">
             Autentificare
           </Button>
-          <Button variant="accent" size="sm">
+          <Button variant="accent" size="sm" onClick={() => navigate("/cerere")}>
             Solicită Oferte
           </Button>
         </div>
@@ -77,7 +78,7 @@ const Header = () => {
               <Button variant="outline" className="w-full">
                 Autentificare
               </Button>
-              <Button variant="accent" className="w-full">
+              <Button variant="accent" className="w-full" onClick={() => { setIsMenuOpen(false); navigate("/cerere"); }}>
                 Solicită Oferte
               </Button>
             </div>
