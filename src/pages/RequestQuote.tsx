@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Car, Wrench, MapPin, User, CheckCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { ArrowLeft, ArrowRight, Car, Wrench, MapPin, User, CheckCircle, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,21 +10,32 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+const jobSchema = z.object({
+  carMake: z.string().min(1, "Selectează marca").max(100),
+  carModel: z.string().min(1, "Introdu modelul").max(100),
+  carYear: z.string().min(4, "Selectează anul"),
+  fuelType: z.string().min(1, "Selectează combustibilul").max(50),
+  serviceCategory: z.string().min(1, "Selectează categoria").max(100),
+  problemDescription: z.string().min(10, "Descrie problema (min. 10 caractere)").max(2000),
+  urgency: z.string().min(1, "Selectează urgența").max(50),
+  city: z.string().min(1, "Introdu localitatea").max(100),
+  county: z.string().min(1, "Selectează județul").max(100),
+});
 
 interface FormData {
-  // Car details
   carMake: string;
   carModel: string;
   carYear: string;
   fuelType: string;
-  // Service details
   serviceCategory: string;
   problemDescription: string;
   urgency: string;
-  // Location
   city: string;
   county: string;
-  // Contact
   name: string;
   email: string;
   phone: string;
@@ -51,7 +62,7 @@ const steps = [
   { id: 1, title: "Detalii mașină", icon: Car },
   { id: 2, title: "Serviciu necesar", icon: Wrench },
   { id: 3, title: "Locație", icon: MapPin },
-  { id: 4, title: "Date contact", icon: User },
+  { id: 4, title: "Confirmare", icon: CheckCircle },
 ];
 
 const carMakes = ["Dacia", "Volkswagen", "Skoda", "Ford", "Opel", "Renault", "BMW", "Mercedes", "Audi", "Toyota", "Hyundai", "Kia", "Peugeot", "Citroën", "Fiat", "Altă marcă"];
@@ -70,18 +81,43 @@ const serviceCategories = [
 ];
 const urgencyOptions = [
   { value: "urgent", label: "Urgent (în 1-2 zile)" },
-  { value: "saptamana", label: "În această săptămână" },
+  { value: "normal", label: "În această săptămână" },
   { value: "flexibil", label: "Flexibil" },
 ];
 const counties = ["București", "Cluj", "Timiș", "Iași", "Constanța", "Brașov", "Prahova", "Dolj", "Bihor", "Argeș", "Sibiu", "Bacău", "Mureș", "Galați", "Suceava", "Altul"];
 
 const RequestQuote = () => {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [createdJobId, setCreatedJobId] = useState<string | null>(null);
+
+  // Pre-fill user data if logged in
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, phone')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profile) {
+          setFormData(prev => ({
+            ...prev,
+            name: profile.full_name || '',
+            phone: profile.phone || '',
+            email: user.email || '',
+          }));
+        }
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   const updateFormData = (field: keyof FormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -91,7 +127,7 @@ const RequestQuote = () => {
   };
 
   const validateStep = (step: number): boolean => {
-    const newErrors: Partial<FormData> = {};
+    const newErrors: Partial<Record<keyof FormData, string>> = {};
 
     switch (step) {
       case 1:
@@ -112,14 +148,11 @@ const RequestQuote = () => {
         if (!formData.city) newErrors.city = "Introdu localitatea";
         break;
       case 4:
-        if (!formData.name || formData.name.length < 2) newErrors.name = "Introdu numele complet";
-        if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-          newErrors.email = "Introdu un email valid";
+        if (!user) {
+          // User must be logged in to submit
+          newErrors.email = "Trebuie să fii autentificat";
         }
-        if (!formData.phone || !/^(\+40|0)[0-9]{9}$/.test(formData.phone.replace(/\s/g, ""))) {
-          newErrors.phone = "Introdu un număr valid (ex: 0722123456)";
-        }
-        if (!formData.agreeTerms) newErrors.agreeTerms = "Trebuie să accepți termenii" as any;
+        if (!formData.agreeTerms) newErrors.agreeTerms = "Trebuie să accepți termenii";
         break;
     }
 
@@ -144,18 +177,68 @@ const RequestQuote = () => {
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      toast({
+        title: "Autentificare necesară",
+        description: "Trebuie să fii autentificat pentru a trimite o cerere.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate with zod
+    const validation = jobSchema.safeParse(formData);
+    if (!validation.success) {
+      toast({
+        title: "Date incomplete",
+        description: "Verifică toate câmpurile obligatorii.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    console.log("Form submitted:", formData);
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    
-    toast({
-      title: "Cerere trimisă cu succes!",
-      description: "Vei primi oferte pe email în curând.",
-    });
+
+    try {
+      const categoryLabel = serviceCategories.find(c => c.value === formData.serviceCategory)?.label || formData.serviceCategory;
+
+      const { data, error } = await supabase
+        .from('jobs')
+        .insert({
+          user_id: user.id,
+          category: categoryLabel,
+          car_make: formData.carMake.trim(),
+          car_model: formData.carModel.trim(),
+          car_year: parseInt(formData.carYear),
+          fuel_type: formData.fuelType,
+          description: formData.problemDescription.trim(),
+          city: formData.city.trim(),
+          county: formData.county,
+          urgency: formData.urgency,
+          status: 'open',
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      setCreatedJobId(data.id);
+      setIsSubmitted(true);
+
+      toast({
+        title: "Cerere trimisă cu succes!",
+        description: "Vei primi oferte de la service-uri în curând.",
+      });
+    } catch (error) {
+      console.error('Error submitting job:', error);
+      toast({
+        title: "Eroare",
+        description: "Nu am putut trimite cererea. Încercați din nou.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const generateYears = () => {
@@ -181,13 +264,18 @@ const RequestQuote = () => {
                 Cererea a fost trimisă!
               </h1>
               <p className="text-lg text-muted-foreground mb-8">
-                Vei primi oferte de la service-uri din zona ta pe adresa <strong>{formData.email}</strong> în maxim 24 de ore.
+                Vei primi oferte de la service-uri din zona ta. Poți urmări statusul cererii în contul tău.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="default" onClick={() => navigate("/")}>
-                  Înapoi acasă
+                {createdJobId && (
+                  <Button variant="default" onClick={() => navigate(`/cereri/${createdJobId}`)}>
+                    Vezi cererea
+                  </Button>
+                )}
+                <Button variant="outline" onClick={() => navigate("/contul-meu")}>
+                  Toate cererile mele
                 </Button>
-                <Button variant="outline" onClick={() => { setIsSubmitted(false); setCurrentStep(1); setFormData(initialFormData); }}>
+                <Button variant="ghost" onClick={() => { setIsSubmitted(false); setCurrentStep(1); setFormData(initialFormData); }}>
                   Trimite altă cerere
                 </Button>
               </div>
@@ -276,6 +364,7 @@ const RequestQuote = () => {
                       value={formData.carModel}
                       onChange={(e) => updateFormData("carModel", e.target.value)}
                       className={errors.carModel ? "border-destructive" : ""}
+                      maxLength={100}
                     />
                     {errors.carModel && <p className="text-sm text-destructive">{errors.carModel}</p>}
                   </div>
@@ -344,7 +433,9 @@ const RequestQuote = () => {
                       value={formData.problemDescription}
                       onChange={(e) => updateFormData("problemDescription", e.target.value)}
                       className={`min-h-[120px] ${errors.problemDescription ? "border-destructive" : ""}`}
+                      maxLength={2000}
                     />
+                    <p className="text-xs text-muted-foreground text-right">{formData.problemDescription.length}/2000</p>
                     {errors.problemDescription && <p className="text-sm text-destructive">{errors.problemDescription}</p>}
                   </div>
 
@@ -397,6 +488,7 @@ const RequestQuote = () => {
                       value={formData.city}
                       onChange={(e) => updateFormData("city", e.target.value)}
                       className={errors.city ? "border-destructive" : ""}
+                      maxLength={100}
                     />
                     {errors.city && <p className="text-sm text-destructive">{errors.city}</p>}
                   </div>
@@ -410,106 +502,132 @@ const RequestQuote = () => {
               </div>
             )}
 
-            {/* Step 4: Contact */}
+            {/* Step 4: Confirmation */}
             {currentStep === 4 && (
               <div className="space-y-6 animate-fade-in">
                 <h2 className="font-display text-xl font-semibold text-foreground mb-6">
-                  Datele tale de contact
+                  Confirmă și trimite cererea
                 </h2>
 
-                <div className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nume complet *</Label>
-                    <Input
-                      id="name"
-                      placeholder="ex: Ion Popescu"
-                      value={formData.name}
-                      onChange={(e) => updateFormData("name", e.target.value)}
-                      className={errors.name ? "border-destructive" : ""}
-                    />
-                    {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                {/* Auth Status */}
+                {!authLoading && !user ? (
+                  <div className="p-6 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                    <div className="flex items-start gap-4">
+                      <LogIn className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h3 className="font-medium text-amber-900 dark:text-amber-100 mb-1">
+                          Autentificare necesară
+                        </h3>
+                        <p className="text-sm text-amber-700 dark:text-amber-300 mb-4">
+                          Pentru a trimite cererea și a primi oferte, trebuie să fii autentificat.
+                        </p>
+                        <Button onClick={() => navigate('/autentificare')} variant="default">
+                          <LogIn className="mr-2 h-4 w-4" />
+                          Autentifică-te
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="ex: ion.popescu@email.com"
-                      value={formData.email}
-                      onChange={(e) => updateFormData("email", e.target.value)}
-                      className={errors.email ? "border-destructive" : ""}
-                    />
-                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                ) : (
+                  <div className="p-4 rounded-xl bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <p className="text-sm text-green-700 dark:text-green-300">
+                        Ești autentificat ca <strong>{user?.email}</strong>
+                      </p>
+                    </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Telefon *</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="ex: 0722 123 456"
-                      value={formData.phone}
-                      onChange={(e) => updateFormData("phone", e.target.value)}
-                      className={errors.phone ? "border-destructive" : ""}
-                    />
-                    {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
-                  </div>
-
-                  <div className="flex items-start gap-3 pt-2">
-                    <Checkbox
-                      id="agreeTerms"
-                      checked={formData.agreeTerms}
-                      onCheckedChange={(checked) => updateFormData("agreeTerms", !!checked)}
-                    />
-                    <Label htmlFor="agreeTerms" className="text-sm leading-relaxed cursor-pointer">
-                      Sunt de acord cu{" "}
-                      <a href="#" className="text-primary underline hover:no-underline">Termenii și Condițiile</a>
-                      {" "}și{" "}
-                      <a href="#" className="text-primary underline hover:no-underline">Politica de Confidențialitate</a>
-                    </Label>
-                  </div>
-                  {errors.agreeTerms && <p className="text-sm text-destructive">Trebuie să accepți termenii</p>}
-                </div>
+                )}
 
                 {/* Summary */}
-                <div className="mt-6 p-5 rounded-xl bg-muted/50 border border-border">
-                  <h3 className="font-semibold text-foreground mb-3">Rezumatul cererii</h3>
-                  <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                    <div><span className="text-muted-foreground">Mașină:</span> <span className="font-medium">{formData.carMake} {formData.carModel} ({formData.carYear})</span></div>
-                    <div><span className="text-muted-foreground">Combustibil:</span> <span className="font-medium">{formData.fuelType}</span></div>
-                    <div><span className="text-muted-foreground">Serviciu:</span> <span className="font-medium">{serviceCategories.find(c => c.value === formData.serviceCategory)?.label}</span></div>
-                    <div><span className="text-muted-foreground">Locație:</span> <span className="font-medium">{formData.city}, {formData.county}</span></div>
+                <div className="space-y-4">
+                  <h3 className="font-medium">Rezumatul cererii</h3>
+                  
+                  <div className="grid gap-4 p-4 rounded-xl bg-muted/50 border border-border">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Mașină</p>
+                        <p className="font-medium">{formData.carMake} {formData.carModel} ({formData.carYear})</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Combustibil</p>
+                        <p className="font-medium">{formData.fuelType}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Serviciu</p>
+                        <p className="font-medium">
+                          {serviceCategories.find(c => c.value === formData.serviceCategory)?.label}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Locație</p>
+                        <p className="font-medium">{formData.city}, {formData.county}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Descriere</p>
+                      <p className="text-sm">{formData.problemDescription}</p>
+                    </div>
                   </div>
                 </div>
+
+                {/* Terms */}
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="agreeTerms"
+                    checked={formData.agreeTerms}
+                    onCheckedChange={(checked) => updateFormData("agreeTerms", !!checked)}
+                    className={errors.agreeTerms ? "border-destructive" : ""}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <label
+                      htmlFor="agreeTerms"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Accept termenii și condițiile *
+                    </label>
+                    <p className="text-sm text-muted-foreground">
+                      Sunt de acord cu{" "}
+                      <Link to="/termeni" className="text-primary hover:underline">
+                        Termenii și Condițiile
+                      </Link>{" "}
+                      și{" "}
+                      <Link to="/confidentialitate" className="text-primary hover:underline">
+                        Politica de Confidențialitate
+                      </Link>
+                    </p>
+                  </div>
+                </div>
+                {errors.agreeTerms && <p className="text-sm text-destructive">{errors.agreeTerms}</p>}
               </div>
             )}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8 pt-6 border-t border-border">
+            <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
               <Button
-                variant="outline"
-                onClick={handleBack}
-                disabled={currentStep === 1}
-                className={currentStep === 1 ? "invisible" : ""}
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Înapoi
-              </Button>
-              
-              <Button
-                variant="accent"
-                onClick={handleNext}
+                variant="ghost"
+                onClick={currentStep === 1 ? () => navigate("/") : handleBack}
                 disabled={isSubmitting}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {currentStep === 1 ? "Anulează" : "Înapoi"}
+              </Button>
+
+              <Button
+                onClick={handleNext}
+                disabled={isSubmitting || (currentStep === 4 && !user)}
               >
                 {isSubmitting ? (
                   "Se trimite..."
                 ) : currentStep === 4 ? (
-                  <>Trimite cererea</>
+                  <>
+                    Trimite cererea
+                    <CheckCircle className="ml-2 h-4 w-4" />
+                  </>
                 ) : (
                   <>
                     Continuă
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
               </Button>
