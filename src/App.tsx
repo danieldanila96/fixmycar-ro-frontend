@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import JobDetails from "./pages/JobDetails";
 import GarageDashboard from "./pages/GarageDashboard";
 import GarageJobDetails from "./pages/GarageJobDetails";
+import ReviewPage from "./pages/ReviewPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/autentificare" element={<Auth />} />
             <Route path="/contul-meu" element={<Dashboard />} />
             <Route path="/cereri/:id" element={<JobDetails />} />
+            <Route path="/cereri/:jobId/recenzie" element={<ReviewPage />} />
             <Route path="/service" element={<GarageDashboard />} />
             <Route path="/service/cereri/:id" element={<GarageJobDetails />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
