@@ -9,6 +9,8 @@ import RequestQuote from "./pages/RequestQuote";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import JobDetails from "./pages/JobDetails";
+import GarageDashboard from "./pages/GarageDashboard";
+import GarageJobDetails from "./pages/GarageJobDetails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +28,8 @@ const App = () => (
             <Route path="/autentificare" element={<Auth />} />
             <Route path="/contul-meu" element={<Dashboard />} />
             <Route path="/cereri/:id" element={<JobDetails />} />
+            <Route path="/service" element={<GarageDashboard />} />
+            <Route path="/service/cereri/:id" element={<GarageJobDetails />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
