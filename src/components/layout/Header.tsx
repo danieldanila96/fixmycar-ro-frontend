@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Car, User, LogOut } from "lucide-react";
+import { Menu, X, Car, User, LogOut, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +14,30 @@ import {
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userType, setUserType] = useState<'customer' | 'garage' | null>(null);
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+
+  useEffect(() => {
+    const fetchUserType = async () => {
+      if (!user) {
+        setUserType(null);
+        return;
+      }
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_type')
+        .eq('user_id', user.id)
+        .single();
+
+      if (data) {
+        setUserType(data.user_type as 'customer' | 'garage');
+      }
+    };
+
+    fetchUserType();
+  }, [user]);
 
   const navLinks = [
     { href: "/", label: "Acasă" },
@@ -26,6 +49,14 @@ const Header = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const getDashboardPath = () => {
+    return userType === 'garage' ? '/service' : '/contul-meu';
+  };
+
+  const getDashboardLabel = () => {
+    return userType === 'garage' ? 'Portal Service' : 'Dashboard';
   };
 
   return (
@@ -60,14 +91,14 @@ const Header = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
-                  <User className="h-4 w-4" />
+                  {userType === 'garage' ? <Wrench className="h-4 w-4" /> : <User className="h-4 w-4" />}
                   Contul meu
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => navigate('/contul-meu')}>
-                  <User className="mr-2 h-4 w-4" />
-                  Dashboard
+                <DropdownMenuItem onClick={() => navigate(getDashboardPath())}>
+                  {userType === 'garage' ? <Wrench className="mr-2 h-4 w-4" /> : <User className="mr-2 h-4 w-4" />}
+                  {getDashboardLabel()}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
@@ -81,9 +112,11 @@ const Header = () => {
               Autentificare
             </Button>
           )}
-          <Button variant="accent" size="sm" onClick={() => navigate("/cerere")}>
-            Solicită Oferte
-          </Button>
+          {(!user || userType === 'customer') && (
+            <Button variant="accent" size="sm" onClick={() => navigate("/cerere")}>
+              Solicită Oferte
+            </Button>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -113,9 +146,9 @@ const Header = () => {
             <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
               {user ? (
                 <>
-                  <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/contul-meu'); }}>
-                    <User className="mr-2 h-4 w-4" />
-                    Contul meu
+                  <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate(getDashboardPath()); }}>
+                    {userType === 'garage' ? <Wrench className="mr-2 h-4 w-4" /> : <User className="mr-2 h-4 w-4" />}
+                    {getDashboardLabel()}
                   </Button>
                   <Button variant="ghost" className="w-full text-destructive" onClick={() => { setIsMenuOpen(false); handleSignOut(); }}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -127,9 +160,11 @@ const Header = () => {
                   Autentificare
                 </Button>
               )}
-              <Button variant="accent" className="w-full" onClick={() => { setIsMenuOpen(false); navigate("/cerere"); }}>
-                Solicită Oferte
-              </Button>
+              {(!user || userType === 'customer') && (
+                <Button variant="accent" className="w-full" onClick={() => { setIsMenuOpen(false); navigate("/cerere"); }}>
+                  Solicită Oferte
+                </Button>
+              )}
             </div>
           </nav>
         </div>
