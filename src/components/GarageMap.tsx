@@ -12,6 +12,8 @@ interface GarageProfile {
   county: string | null;
   average_rating: number | null;
   total_reviews: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 interface GarageMapProps {
@@ -129,17 +131,22 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
   }, []);
 
   // Get coordinates for a garage
-  const getCoordinates = (garage: GarageProfile): [number, number] | null => {
-    // Try city first
+  const getCoordinates = (garage: GarageProfile): { coords: [number, number]; isExact: boolean } | null => {
+    // Use exact GPS coordinates if available
+    if (garage.latitude && garage.longitude) {
+      return { coords: [garage.longitude, garage.latitude], isExact: true };
+    }
+    
+    // Try city as fallback
     if (garage.city) {
       const cityCoords = CITY_COORDINATES[garage.city];
-      if (cityCoords) return cityCoords;
+      if (cityCoords) return { coords: cityCoords, isExact: false };
     }
     
     // Try county as fallback
     if (garage.county) {
       const countyCoords = COUNTY_COORDINATES[garage.county];
-      if (countyCoords) return countyCoords;
+      if (countyCoords) return { coords: countyCoords, isExact: false };
     }
     
     return null;
@@ -190,14 +197,18 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
 
     // Add new markers
     garages.forEach(garage => {
-      const coords = getCoordinates(garage);
-      if (!coords) return;
+      const result = getCoordinates(garage);
+      if (!result) return;
 
-      // Add small random offset to prevent overlapping
-      const offset: [number, number] = [
-        coords[0] + (Math.random() - 0.5) * 0.02,
-        coords[1] + (Math.random() - 0.5) * 0.02,
-      ];
+      const { coords, isExact } = result;
+      
+      // Add small random offset only for non-exact coordinates to prevent overlapping
+      const finalCoords: [number, number] = isExact 
+        ? coords 
+        : [
+            coords[0] + (Math.random() - 0.5) * 0.02,
+            coords[1] + (Math.random() - 0.5) * 0.02,
+          ];
 
       const el = document.createElement('div');
       el.className = 'garage-marker';
@@ -237,7 +248,7 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
       `);
 
       const marker = new mapboxgl.Marker(el)
-        .setLngLat(offset)
+        .setLngLat(finalCoords)
         .setPopup(popup)
         .addTo(map.current!);
 

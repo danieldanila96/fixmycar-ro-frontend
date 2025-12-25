@@ -226,6 +226,8 @@ export type Database = {
           full_name: string | null
           gallery_images: string[] | null
           id: string
+          latitude: number | null
+          longitude: number | null
           phone: string | null
           rar_authorization: string | null
           specialties: string[] | null
@@ -246,6 +248,8 @@ export type Database = {
           full_name?: string | null
           gallery_images?: string[] | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           phone?: string | null
           rar_authorization?: string | null
           specialties?: string[] | null
@@ -266,6 +270,8 @@ export type Database = {
           full_name?: string | null
           gallery_images?: string[] | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           phone?: string | null
           rar_authorization?: string | null
           specialties?: string[] | null
