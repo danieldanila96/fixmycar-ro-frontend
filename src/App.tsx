@@ -8,6 +8,8 @@ import { NotificationProvider } from "@/components/NotificationProvider";
 import Index from "./pages/Index";
 import RequestQuote from "./pages/RequestQuote";
 import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import JobDetails from "./pages/JobDetails";
 import GarageDashboard from "./pages/GarageDashboard";
@@ -37,6 +39,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/cerere" element={<RequestQuote />} />
             <Route path="/autentificare" element={<Auth />} />
+            <Route path="/am-uitat-parola" element={<ForgotPassword />} />
+            <Route path="/reseteaza-parola" element={<ResetPassword />} />
             <Route path="/contul-meu" element={<Dashboard />} />
             <Route path="/cereri/:id" element={<JobDetails />} />
             <Route path="/cereri/:jobId/recenzie" element={<ReviewPage />} />

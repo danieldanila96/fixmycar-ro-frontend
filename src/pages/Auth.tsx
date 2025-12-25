@@ -266,6 +266,15 @@ const Auth = () => {
                       </div>
                     </div>
 
+                    <div className="flex justify-end">
+                      <Link 
+                        to="/am-uitat-parola" 
+                        className="text-sm text-primary hover:underline"
+                      >
+                        Ați uitat parola?
+                      </Link>
+                    </div>
+
                     <Button type="submit" className="w-full" disabled={isSubmitting}>
                       {isSubmitting ? "Se autentifică..." : "Autentificare"}
                     </Button>
