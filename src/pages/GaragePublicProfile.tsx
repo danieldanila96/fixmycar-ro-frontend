@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import FavoriteButton from '@/components/FavoriteButton';
+import AppointmentBooking from '@/components/AppointmentBooking';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -340,7 +341,12 @@ const GaragePublicProfile = () => {
                   )}
                   <FavoriteButton garageId={garage.user_id} variant="full" className="w-full mb-3" />
                   
-                  <Button asChild className="w-full">
+                  <AppointmentBooking 
+                    garageId={garage.user_id} 
+                    garageName={garage.business_name || 'Service auto'} 
+                  />
+                  
+                  <Button asChild variant="outline" className="w-full mt-3">
                     <Link to="/cerere">
                       Solicită ofertă
                     </Link>

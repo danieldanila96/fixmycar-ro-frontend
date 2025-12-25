@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Car, MapPin, Clock, Calendar, MessageSquare, CheckCircle, Send } from 'lucide-react';
+import { Car, MapPin, Clock, Calendar, MessageSquare, CheckCircle, Send, CalendarDays } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import JobFilters, { JobFiltersState } from '@/components/JobFilters';
+import GarageAppointments from '@/components/GarageAppointments';
 
 interface Job {
   id: string;
@@ -389,6 +390,10 @@ const GarageDashboard = () => {
               <TabsTrigger value="my-quotes">
                 Ofertele mele ({myQuotes?.length || 0})
               </TabsTrigger>
+              <TabsTrigger value="appointments" className="flex items-center gap-1">
+                <CalendarDays className="h-4 w-4" />
+                Programări
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="available">
@@ -488,6 +493,10 @@ const GarageDashboard = () => {
                   </CardContent>
                 </Card>
               )}
+            </TabsContent>
+
+            <TabsContent value="appointments">
+              <GarageAppointments />
             </TabsContent>
           </Tabs>
         </div>
