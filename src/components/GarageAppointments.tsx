@@ -77,15 +77,16 @@ const GarageAppointments = () => {
       if (!appointments?.length) return {};
       
       const customerIds = [...new Set(appointments.map(a => a.customer_id))];
+      // Use profiles_safe view to only get phone numbers for active relationships
       const { data, error } = await supabase
-        .from('profiles')
+        .from('profiles_safe')
         .select('user_id, full_name, phone')
         .in('user_id', customerIds);
       
       if (error) throw error;
       
       const customerMap: Record<string, CustomerProfile> = {};
-      data?.forEach(c => {
+      (data as { user_id: string; full_name: string | null; phone: string | null }[])?.forEach(c => {
         customerMap[c.user_id] = c;
       });
       return customerMap;

@@ -440,6 +440,78 @@ export type Database = {
       }
     }
     Views: {
+      profiles_safe: {
+        Row: {
+          avatar_url: string | null
+          average_rating: number | null
+          business_address: string | null
+          business_name: string | null
+          city: string | null
+          county: string | null
+          created_at: string | null
+          description: string | null
+          full_name: string | null
+          gallery_images: string[] | null
+          id: string | null
+          latitude: number | null
+          longitude: number | null
+          operating_hours: Json | null
+          phone: string | null
+          rar_authorization: string | null
+          specialties: string[] | null
+          total_reviews: number | null
+          updated_at: string | null
+          user_id: string | null
+          user_type: Database["public"]["Enums"]["user_type"] | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          average_rating?: number | null
+          business_address?: string | null
+          business_name?: string | null
+          city?: string | null
+          county?: string | null
+          created_at?: string | null
+          description?: string | null
+          full_name?: string | null
+          gallery_images?: string[] | null
+          id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          operating_hours?: Json | null
+          phone?: never
+          rar_authorization?: string | null
+          specialties?: string[] | null
+          total_reviews?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          user_type?: Database["public"]["Enums"]["user_type"] | null
+        }
+        Update: {
+          avatar_url?: string | null
+          average_rating?: number | null
+          business_address?: string | null
+          business_name?: string | null
+          city?: string | null
+          county?: string | null
+          created_at?: string | null
+          description?: string | null
+          full_name?: string | null
+          gallery_images?: string[] | null
+          id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          operating_hours?: Json | null
+          phone?: never
+          rar_authorization?: string | null
+          specialties?: string[] | null
+          total_reviews?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          user_type?: Database["public"]["Enums"]["user_type"] | null
+        }
+        Relationships: []
+      }
       reviews_public: {
         Row: {
           comment: string | null
@@ -480,6 +552,10 @@ export type Database = {
       get_user_type: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_type"]
+      }
+      has_active_customer_relationship: {
+        Args: { _customer_id: string; _garage_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
