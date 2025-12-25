@@ -203,6 +203,7 @@ export type Database = {
           created_at: string
           description: string | null
           full_name: string | null
+          gallery_images: string[] | null
           id: string
           phone: string | null
           rar_authorization: string | null
@@ -221,6 +222,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           full_name?: string | null
+          gallery_images?: string[] | null
           id?: string
           phone?: string | null
           rar_authorization?: string | null
@@ -239,6 +241,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           full_name?: string | null
+          gallery_images?: string[] | null
           id?: string
           phone?: string | null
           rar_authorization?: string | null

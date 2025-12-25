@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
+import { GalleryUpload } from '@/components/GalleryUpload';
 import { User, Building2, Phone, MapPin, FileText, Star, Loader2 } from 'lucide-react';
 
 const customerSchema = z.object({
@@ -48,6 +49,7 @@ interface Profile {
   description: string | null;
   average_rating: number | null;
   total_reviews: number | null;
+  gallery_images: string[] | null;
 }
 
 const Profile = () => {
@@ -104,6 +106,7 @@ const Profile = () => {
           rar_authorization: data.rar_authorization,
           description: data.description,
           avatar_url: data.avatar_url,
+          gallery_images: data.gallery_images,
         })
         .eq('user_id', user.id);
       
@@ -363,6 +366,18 @@ const Profile = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Gallery Section for Garages */}
+                {isGarage && (
+                  <div className="pt-6 border-t">
+                    <GalleryUpload
+                      userId={user?.id || ''}
+                      images={formData.gallery_images || []}
+                      onImagesChange={(images) => setFormData(prev => ({ ...prev, gallery_images: images }))}
+                      isEditing={isEditing}
+                    />
+                  </div>
+                )}
 
                 {isEditing && (
                   <div className="flex gap-3 pt-4">
