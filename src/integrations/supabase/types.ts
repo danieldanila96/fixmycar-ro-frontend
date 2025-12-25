@@ -112,6 +112,7 @@ export type Database = {
           description: string
           fuel_type: string | null
           id: string
+          images: string[] | null
           needed_by: string | null
           status: Database["public"]["Enums"]["job_status"]
           updated_at: string
@@ -129,6 +130,7 @@ export type Database = {
           description: string
           fuel_type?: string | null
           id?: string
+          images?: string[] | null
           needed_by?: string | null
           status?: Database["public"]["Enums"]["job_status"]
           updated_at?: string
@@ -146,6 +148,7 @@ export type Database = {
           description?: string
           fuel_type?: string | null
           id?: string
+          images?: string[] | null
           needed_by?: string | null
           status?: Database["public"]["Enums"]["job_status"]
           updated_at?: string

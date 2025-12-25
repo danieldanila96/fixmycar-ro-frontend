@@ -48,6 +48,7 @@ interface Job {
   status: JobStatus;
   created_at: string;
   needed_by: string | null;
+  images: string[] | null;
 }
 
 interface Review {
@@ -331,6 +332,29 @@ const JobDetails = () => {
                     <p className="text-sm font-medium text-muted-foreground mb-1">Descriere problemă</p>
                     <p className="text-sm">{job.description}</p>
                   </div>
+
+                  {job.images && job.images.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-2">Poze atașate</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {job.images.map((img, index) => (
+                          <a
+                            key={index}
+                            href={img}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block aspect-video overflow-hidden rounded-lg border hover:opacity-90 transition-opacity"
+                          >
+                            <img
+                              src={img}
+                              alt={`Poză ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <Separator />
 

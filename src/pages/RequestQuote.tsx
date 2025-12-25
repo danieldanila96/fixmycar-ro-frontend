@@ -13,6 +13,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { MultiImageUpload } from "@/components/MultiImageUpload";
 
 const jobSchema = z.object({
   carMake: z.string().min(1, "Selectează marca").max(100),
@@ -40,6 +41,7 @@ interface FormData {
   email: string;
   phone: string;
   agreeTerms: boolean;
+  images: string[];
 }
 
 const initialFormData: FormData = {
@@ -56,6 +58,7 @@ const initialFormData: FormData = {
   email: "",
   phone: "",
   agreeTerms: false,
+  images: [],
 };
 
 const steps = [
@@ -216,6 +219,7 @@ const RequestQuote = () => {
           county: formData.county,
           urgency: formData.urgency,
           status: 'open',
+          images: formData.images,
         })
         .select('id')
         .single();
@@ -437,6 +441,21 @@ const RequestQuote = () => {
                     />
                     <p className="text-xs text-muted-foreground text-right">{formData.problemDescription.length}/2000</p>
                     {errors.problemDescription && <p className="text-sm text-destructive">{errors.problemDescription}</p>}
+                  </div>
+
+                  {/* Image Upload */}
+                  <div className="space-y-2">
+                    <Label>Adaugă poze (opțional)</Label>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Pozele ajută service-urile să înțeleagă mai bine problema.
+                    </p>
+                    <MultiImageUpload
+                      bucket="job-images"
+                      folder={user?.id || 'temp'}
+                      currentImages={formData.images}
+                      onUpload={(urls) => setFormData(prev => ({ ...prev, images: urls }))}
+                      maxImages={5}
+                    />
                   </div>
 
                   <div className="space-y-2">
