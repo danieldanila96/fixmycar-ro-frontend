@@ -25,21 +25,30 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-semibold text-lg mb-4">Linkuri Rapide</h4>
             <ul className="space-y-2.5">
-              {[
-                { href: "#cum-functioneaza", label: "Cum funcționează" },
-                { href: "#pentru-garaje", label: "Pentru Garaje" },
-                { href: "#", label: "Termeni și Condiții" },
-                { href: "#", label: "Politica de Confidențialitate" },
-              ].map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-primary-foreground/70 hover:text-accent text-sm transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
+              <li>
+                <Link
+                  to="/cum-functioneaza"
+                  className="text-primary-foreground/70 hover:text-accent text-sm transition-colors"
+                >
+                  Cum funcționează
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/contact"
+                  className="text-primary-foreground/70 hover:text-accent text-sm transition-colors"
+                >
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/termeni"
+                  className="text-primary-foreground/70 hover:text-accent text-sm transition-colors"
+                >
+                  Termeni și Condiții
+                </Link>
+              </li>
             </ul>
           </div>
 
