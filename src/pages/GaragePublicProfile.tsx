@@ -16,10 +16,26 @@ import {
   ArrowLeft,
   Image as ImageIcon,
   MessageSquare,
-  User
+  User,
+  Wrench
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ro } from 'date-fns/locale';
+
+const SERVICE_CATEGORIES = [
+  { value: "revizie", label: "Revizie & Întreținere" },
+  { value: "mecanica", label: "Mecanică generală" },
+  { value: "electrica", label: "Electrică auto" },
+  { value: "caroserie", label: "Tinichigerie & Vopsitorie" },
+  { value: "diagnoza", label: "Diagnoză computerizată" },
+  { value: "clima", label: "Aer condiționat" },
+  { value: "frane", label: "Sistem de frânare" },
+  { value: "suspensie", label: "Suspensie & Direcție" },
+  { value: "distributie", label: "Distribuție" },
+  { value: "geometrie", label: "Geometrie roți" },
+  { value: "itp", label: "Pregătire ITP" },
+  { value: "altele", label: "Altele" },
+];
 
 interface GarageProfile {
   id: string;
@@ -36,6 +52,7 @@ interface GarageProfile {
   average_rating: number | null;
   total_reviews: number | null;
   gallery_images: string[] | null;
+  specialties: string[] | null;
 }
 
 interface Review {
@@ -203,6 +220,26 @@ const GaragePublicProfile = () => {
                       )}
                     </div>
                   </div>
+
+                  {/* Specialties */}
+                  {garage.specialties && garage.specialties.length > 0 && (
+                    <div className="mt-6 pt-6 border-t">
+                      <h3 className="font-semibold mb-3 flex items-center gap-2">
+                        <Wrench className="h-4 w-4" />
+                        Specialități
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {garage.specialties.map((specialty) => {
+                          const cat = SERVICE_CATEGORIES.find(c => c.value === specialty);
+                          return (
+                            <Badge key={specialty} variant="secondary">
+                              {cat?.label || specialty}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   {garage.description && (
                     <div className="mt-6 pt-6 border-t">

@@ -11,10 +11,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
 import { GalleryUpload } from '@/components/GalleryUpload';
-import { User, Building2, Phone, MapPin, FileText, Star, Loader2 } from 'lucide-react';
+import { User, Building2, Phone, MapPin, FileText, Star, Loader2, Wrench } from 'lucide-react';
 
 const customerSchema = z.object({
   full_name: z.string().min(2, 'Numele trebuie să aibă cel puțin 2 caractere').max(100),
@@ -50,7 +52,23 @@ interface Profile {
   average_rating: number | null;
   total_reviews: number | null;
   gallery_images: string[] | null;
+  specialties: string[] | null;
 }
+
+const SERVICE_CATEGORIES = [
+  { value: "revizie", label: "Revizie & Întreținere" },
+  { value: "mecanica", label: "Mecanică generală" },
+  { value: "electrica", label: "Electrică auto" },
+  { value: "caroserie", label: "Tinichigerie & Vopsitorie" },
+  { value: "diagnoza", label: "Diagnoză computerizată" },
+  { value: "clima", label: "Aer condiționat" },
+  { value: "frane", label: "Sistem de frânare" },
+  { value: "suspensie", label: "Suspensie & Direcție" },
+  { value: "distributie", label: "Distribuție" },
+  { value: "geometrie", label: "Geometrie roți" },
+  { value: "itp", label: "Pregătire ITP" },
+  { value: "altele", label: "Altele" },
+];
 
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
@@ -107,6 +125,7 @@ const Profile = () => {
           description: data.description,
           avatar_url: data.avatar_url,
           gallery_images: data.gallery_images,
+          specialties: data.specialties,
         })
         .eq('user_id', user.id);
       
@@ -330,6 +349,57 @@ const Profile = () => {
                         <p className="text-foreground py-2 whitespace-pre-wrap">
                           {profile.description || '-'}
                         </p>
+                      )}
+                    </div>
+
+                    {/* Specialties Section */}
+                    <div className="space-y-3">
+                      <Label className="flex items-center gap-2">
+                        <Wrench className="h-4 w-4" /> Specialități
+                      </Label>
+                      {isEditing ? (
+                        <div className="grid grid-cols-2 gap-2">
+                          {SERVICE_CATEGORIES.map((cat) => {
+                            const isSelected = formData.specialties?.includes(cat.value) || false;
+                            return (
+                              <label
+                                key={cat.value}
+                                className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${
+                                  isSelected 
+                                    ? 'bg-primary/10 border-primary' 
+                                    : 'hover:bg-muted'
+                                }`}
+                              >
+                                <Checkbox
+                                  checked={isSelected}
+                                  onCheckedChange={(checked) => {
+                                    const current = formData.specialties || [];
+                                    const updated = checked
+                                      ? [...current, cat.value]
+                                      : current.filter(s => s !== cat.value);
+                                    setFormData(prev => ({ ...prev, specialties: updated }));
+                                  }}
+                                />
+                                <span className="text-sm">{cat.label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {profile.specialties && profile.specialties.length > 0 ? (
+                            profile.specialties.map((specialty) => {
+                              const cat = SERVICE_CATEGORIES.find(c => c.value === specialty);
+                              return (
+                                <Badge key={specialty} variant="secondary">
+                                  {cat?.label || specialty}
+                                </Badge>
+                              );
+                            })
+                          ) : (
+                            <p className="text-muted-foreground">-</p>
+                          )}
+                        </div>
                       )}
                     </div>
                   </>
