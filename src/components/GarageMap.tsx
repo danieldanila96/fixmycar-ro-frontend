@@ -210,42 +210,55 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
             coords[1] + (Math.random() - 0.5) * 0.02,
           ];
 
+      // Create marker element using safe DOM methods (no innerHTML)
       const el = document.createElement('div');
       el.className = 'garage-marker';
-      el.innerHTML = `
-        <div style="
-          background: hsl(var(--primary));
-          color: white;
-          padding: 8px 12px;
-          border-radius: 8px;
-          font-weight: 600;
-          font-size: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-          cursor: pointer;
-          white-space: nowrap;
-        ">
-          ${garage.business_name?.substring(0, 20) || 'Service'}${garage.business_name && garage.business_name.length > 20 ? '...' : ''}
-        </div>
-      `;
+      
+      const markerInner = document.createElement('div');
+      Object.assign(markerInner.style, {
+        background: 'hsl(var(--primary))',
+        color: 'white',
+        padding: '8px 12px',
+        borderRadius: '8px',
+        fontWeight: '600',
+        fontSize: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+        cursor: 'pointer',
+        whiteSpace: 'nowrap'
+      });
+      // Use textContent to prevent XSS
+      const displayName = garage.business_name?.substring(0, 20) || 'Service';
+      markerInner.textContent = displayName + (garage.business_name && garage.business_name.length > 20 ? '...' : '');
+      el.appendChild(markerInner);
 
-      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-        <div style="padding: 8px;">
-          <h3 style="margin: 0 0 8px; font-weight: 600; font-size: 14px;">${garage.business_name || 'Service auto'}</h3>
-          <p style="margin: 0 0 4px; font-size: 12px; color: #666;">
-            📍 ${[garage.city, garage.county].filter(Boolean).join(', ')}
-          </p>
-          ${garage.average_rating ? `
-            <p style="margin: 0 0 8px; font-size: 12px;">
-              ⭐ ${garage.average_rating.toFixed(1)} (${garage.total_reviews} recenzii)
-            </p>
-          ` : ''}
-          <a href="/service/${garage.user_id}" style="
-            color: hsl(var(--primary));
-            font-size: 12px;
-            text-decoration: none;
-          ">Vezi detalii →</a>
-        </div>
-      `);
+      // Create popup using safe DOM methods
+      const popupContent = document.createElement('div');
+      popupContent.style.padding = '8px';
+      
+      const popupTitle = document.createElement('h3');
+      Object.assign(popupTitle.style, { margin: '0 0 8px', fontWeight: '600', fontSize: '14px' });
+      popupTitle.textContent = garage.business_name || 'Service auto';
+      popupContent.appendChild(popupTitle);
+      
+      const popupLocation = document.createElement('p');
+      Object.assign(popupLocation.style, { margin: '0 0 4px', fontSize: '12px', color: '#666' });
+      popupLocation.textContent = '📍 ' + [garage.city, garage.county].filter(Boolean).join(', ');
+      popupContent.appendChild(popupLocation);
+      
+      if (garage.average_rating) {
+        const popupRating = document.createElement('p');
+        Object.assign(popupRating.style, { margin: '0 0 8px', fontSize: '12px' });
+        popupRating.textContent = `⭐ ${garage.average_rating.toFixed(1)} (${garage.total_reviews} recenzii)`;
+        popupContent.appendChild(popupRating);
+      }
+      
+      const popupLink = document.createElement('a');
+      popupLink.href = `/service/${garage.user_id}`;
+      Object.assign(popupLink.style, { color: 'hsl(var(--primary))', fontSize: '12px', textDecoration: 'none' });
+      popupLink.textContent = 'Vezi detalii →';
+      popupContent.appendChild(popupLink);
+
+      const popup = new mapboxgl.Popup({ offset: 25 }).setDOMContent(popupContent);
 
       const marker = new mapboxgl.Marker(el)
         .setLngLat(finalCoords)
