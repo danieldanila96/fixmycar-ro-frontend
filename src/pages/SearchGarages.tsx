@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import GarageMap from '@/components/GarageMap';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Search, 
   MapPin, 
@@ -24,7 +26,9 @@ import {
   X,
   Loader2,
   Image as ImageIcon,
-  Wrench
+  Wrench,
+  List,
+  Map
 } from 'lucide-react';
 
 interface GarageProfile {
@@ -72,6 +76,7 @@ const SearchGarages = () => {
   const [selectedCounty, setSelectedCounty] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [sortBy, setSortBy] = useState<'rating' | 'reviews' | 'name'>('rating');
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const { data: garages, isLoading } = useQuery({
     queryKey: ['all-garages'],
@@ -231,6 +236,21 @@ const SearchGarages = () => {
                   Șterge filtrele
                 </Button>
               )}
+
+              <div className="ml-auto">
+                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'map')}>
+                  <TabsList>
+                    <TabsTrigger value="list" className="flex items-center gap-2">
+                      <List className="h-4 w-4" />
+                      <span className="hidden sm:inline">Listă</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="map" className="flex items-center gap-2">
+                      <Map className="h-4 w-4" />
+                      <span className="hidden sm:inline">Hartă</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
             </div>
           </div>
 
@@ -245,6 +265,8 @@ const SearchGarages = () => {
             <div className="flex items-center justify-center py-16">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
+          ) : viewMode === 'map' ? (
+            <GarageMap garages={filteredGarages} selectedCounty={selectedCounty} />
           ) : filteredGarages.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredGarages.map((garage) => (
