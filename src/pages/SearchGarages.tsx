@@ -46,6 +46,8 @@ interface GarageProfile {
   total_reviews: number | null;
   gallery_images: string[] | null;
   specialties: string[] | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 const SERVICE_CATEGORIES = [

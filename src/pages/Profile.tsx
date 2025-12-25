@@ -16,7 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
 import { GalleryUpload } from '@/components/GalleryUpload';
-import { User, Building2, Phone, MapPin, FileText, Star, Loader2, Wrench } from 'lucide-react';
+import { User, Building2, Phone, MapPin, FileText, Star, Loader2, Wrench, Navigation } from 'lucide-react';
 
 const customerSchema = z.object({
   full_name: z.string().min(2, 'Numele trebuie să aibă cel puțin 2 caractere').max(100),
@@ -53,6 +53,8 @@ interface Profile {
   total_reviews: number | null;
   gallery_images: string[] | null;
   specialties: string[] | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 const SERVICE_CATEGORIES = [
@@ -126,6 +128,8 @@ const Profile = () => {
           avatar_url: data.avatar_url,
           gallery_images: data.gallery_images,
           specialties: data.specialties,
+          latitude: data.latitude,
+          longitude: data.longitude,
         })
         .eq('user_id', user.id);
       
@@ -436,6 +440,59 @@ const Profile = () => {
                     )}
                   </div>
                 </div>
+
+                {/* GPS Coordinates Section for Garages */}
+                {isGarage && (
+                  <div className="space-y-3 pt-4 border-t">
+                    <Label className="flex items-center gap-2">
+                      <Navigation className="h-4 w-4" /> Coordonate GPS (pentru hartă)
+                    </Label>
+                    {isEditing ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="latitude">Latitudine</Label>
+                            <Input
+                              id="latitude"
+                              type="number"
+                              step="any"
+                              value={formData.latitude || ''}
+                              onChange={(e) => setFormData(prev => ({ 
+                                ...prev, 
+                                latitude: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              placeholder="ex: 44.4268"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="longitude">Longitudine</Label>
+                            <Input
+                              id="longitude"
+                              type="number"
+                              step="any"
+                              value={formData.longitude || ''}
+                              onChange={(e) => setFormData(prev => ({ 
+                                ...prev, 
+                                longitude: e.target.value ? parseFloat(e.target.value) : null 
+                              }))}
+                              placeholder="ex: 26.1025"
+                            />
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Poți găsi coordonatele pe Google Maps făcând click dreapta pe locație.
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-foreground py-2">
+                        {profile.latitude && profile.longitude 
+                          ? `${profile.latitude}, ${profile.longitude}`
+                          : 'Nesetat - se va folosi locația aproximativă a orașului'
+                        }
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Gallery Section for Garages */}
                 {isGarage && (
