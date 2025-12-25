@@ -23,7 +23,8 @@ import {
   Filter, 
   X,
   Loader2,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Wrench
 } from 'lucide-react';
 
 interface GarageProfile {
@@ -38,7 +39,23 @@ interface GarageProfile {
   average_rating: number | null;
   total_reviews: number | null;
   gallery_images: string[] | null;
+  specialties: string[] | null;
 }
+
+const SERVICE_CATEGORIES = [
+  { value: "revizie", label: "Revizie & Întreținere" },
+  { value: "mecanica", label: "Mecanică generală" },
+  { value: "electrica", label: "Electrică auto" },
+  { value: "caroserie", label: "Tinichigerie & Vopsitorie" },
+  { value: "diagnoza", label: "Diagnoză computerizată" },
+  { value: "clima", label: "Aer condiționat" },
+  { value: "frane", label: "Sistem de frânare" },
+  { value: "suspensie", label: "Suspensie & Direcție" },
+  { value: "distributie", label: "Distribuție" },
+  { value: "geometrie", label: "Geometrie roți" },
+  { value: "itp", label: "Pregătire ITP" },
+  { value: "altele", label: "Altele" },
+];
 
 const ROMANIAN_COUNTIES = [
   'Alba', 'Arad', 'Argeș', 'Bacău', 'Bihor', 'Bistrița-Năsăud', 'Botoșani', 
@@ -53,6 +70,7 @@ const ROMANIAN_COUNTIES = [
 const SearchGarages = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCounty, setSelectedCounty] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [sortBy, setSortBy] = useState<'rating' | 'reviews' | 'name'>('rating');
 
   const { data: garages, isLoading } = useQuery({
@@ -88,6 +106,13 @@ const SearchGarages = () => {
         return false;
       }
 
+      // Category filter
+      if (selectedCategory && selectedCategory !== 'all') {
+        if (!garage.specialties || !garage.specialties.includes(selectedCategory)) {
+          return false;
+        }
+      }
+
       return true;
     });
 
@@ -106,15 +131,16 @@ const SearchGarages = () => {
     });
 
     return result;
-  }, [garages, searchQuery, selectedCounty, sortBy]);
+  }, [garages, searchQuery, selectedCounty, selectedCategory, sortBy]);
 
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedCounty('');
+    setSelectedCategory('');
     setSortBy('rating');
   };
 
-  const hasActiveFilters = searchQuery || selectedCounty;
+  const hasActiveFilters = searchQuery || selectedCounty || selectedCategory;
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -167,6 +193,21 @@ const SearchGarages = () => {
                   {ROMANIAN_COUNTIES.map((county) => (
                     <SelectItem key={county} value={county}>
                       {county}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-[200px]">
+                  <Wrench className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <SelectValue placeholder="Specialitate" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toate specialitățile</SelectItem>
+                  {SERVICE_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -283,6 +324,25 @@ const SearchGarages = () => {
                           )}
                         </div>
                       </div>
+
+                      {/* Specialties */}
+                      {garage.specialties && garage.specialties.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {garage.specialties.slice(0, 3).map((specialty) => {
+                            const cat = SERVICE_CATEGORIES.find(c => c.value === specialty);
+                            return (
+                              <Badge key={specialty} variant="secondary" className="text-xs">
+                                {cat?.label || specialty}
+                              </Badge>
+                            );
+                          })}
+                          {garage.specialties.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{garage.specialties.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
 
                       {garage.description && (
                         <p className="text-sm text-muted-foreground mt-3 line-clamp-2">

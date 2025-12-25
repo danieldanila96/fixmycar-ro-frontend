@@ -207,6 +207,7 @@ export type Database = {
           id: string
           phone: string | null
           rar_authorization: string | null
+          specialties: string[] | null
           total_reviews: number | null
           updated_at: string
           user_id: string
@@ -226,6 +227,7 @@ export type Database = {
           id?: string
           phone?: string | null
           rar_authorization?: string | null
+          specialties?: string[] | null
           total_reviews?: number | null
           updated_at?: string
           user_id: string
@@ -245,6 +247,7 @@ export type Database = {
           id?: string
           phone?: string | null
           rar_authorization?: string | null
+          specialties?: string[] | null
           total_reviews?: number | null
           updated_at?: string
           user_id?: string
