@@ -16,6 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
 import { GalleryUpload } from '@/components/GalleryUpload';
+import OperatingHoursEditor, { OperatingHours } from '@/components/OperatingHoursEditor';
 import { User, Building2, Phone, MapPin, FileText, Star, Loader2, Wrench, Navigation } from 'lucide-react';
 
 const customerSchema = z.object({
@@ -55,6 +56,7 @@ interface Profile {
   specialties: string[] | null;
   latitude: number | null;
   longitude: number | null;
+  operating_hours: OperatingHours | null;
 }
 
 const SERVICE_CATEGORIES = [
@@ -99,7 +101,7 @@ const Profile = () => {
         .maybeSingle();
       
       if (error) throw error;
-      return data as Profile | null;
+      return data as unknown as Profile | null;
     },
     enabled: !!user,
   });
@@ -130,6 +132,7 @@ const Profile = () => {
           specialties: data.specialties,
           latitude: data.latitude,
           longitude: data.longitude,
+          operating_hours: data.operating_hours ? JSON.parse(JSON.stringify(data.operating_hours)) : null,
         })
         .eq('user_id', user.id);
       
@@ -490,6 +493,39 @@ const Profile = () => {
                           : 'Nesetat - se va folosi locația aproximativă a orașului'
                         }
                       </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Operating Hours Section for Garages */}
+                {isGarage && (
+                  <div className="pt-6 border-t">
+                    {isEditing ? (
+                      <OperatingHoursEditor
+                        value={formData.operating_hours || null}
+                        onChange={(hours) => setFormData(prev => ({ ...prev, operating_hours: hours }))}
+                      />
+                    ) : (
+                      <div className="space-y-2">
+                        <Label className="text-base font-semibold">Program de funcționare</Label>
+                        <div className="grid gap-1 text-sm">
+                          {['1', '2', '3', '4', '5', '6', '0'].map((day) => {
+                            const dayNames: Record<string, string> = {
+                              '0': 'Duminică', '1': 'Luni', '2': 'Marți', 
+                              '3': 'Miercuri', '4': 'Joi', '5': 'Vineri', '6': 'Sâmbătă'
+                            };
+                            const hours = profile.operating_hours?.[day];
+                            return (
+                              <div key={day} className="flex justify-between py-1">
+                                <span className="text-muted-foreground">{dayNames[day]}</span>
+                                <span>
+                                  {hours?.closed ? 'Închis' : `${hours?.open || '08:00'} - ${hours?.close || '18:00'}`}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
