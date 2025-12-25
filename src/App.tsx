@@ -13,6 +13,7 @@ import JobDetails from "./pages/JobDetails";
 import GarageDashboard from "./pages/GarageDashboard";
 import GarageJobDetails from "./pages/GarageJobDetails";
 import GaragePublicProfile from "./pages/GaragePublicProfile";
+import SearchGarages from "./pages/SearchGarages";
 import ReviewPage from "./pages/ReviewPage";
 import Profile from "./pages/Profile";
 import HowItWorks from "./pages/HowItWorks";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/service" element={<GarageDashboard />} />
             <Route path="/service/cereri/:id" element={<GarageJobDetails />} />
             <Route path="/service/:garageId" element={<GaragePublicProfile />} />
+            <Route path="/cauta-service" element={<SearchGarages />} />
             <Route path="/profil" element={<Profile />} />
             <Route path="/cum-functioneaza" element={<HowItWorks />} />
             <Route path="/contact" element={<Contact />} />

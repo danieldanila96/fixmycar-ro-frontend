@@ -44,6 +44,7 @@ const Header = () => {
 
   const navLinks = [
     { href: "/", label: "Acasă", isRoute: true },
+    { href: "/cauta-service", label: "Găsește Service", isRoute: true },
     { href: "/cum-functioneaza", label: "Cum funcționează", isRoute: true },
     { href: "/contact", label: "Contact", isRoute: true },
   ];
