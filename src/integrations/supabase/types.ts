@@ -278,6 +278,7 @@ export type Database = {
           id: string
           latitude: number | null
           longitude: number | null
+          operating_hours: Json | null
           phone: string | null
           rar_authorization: string | null
           specialties: string[] | null
@@ -300,6 +301,7 @@ export type Database = {
           id?: string
           latitude?: number | null
           longitude?: number | null
+          operating_hours?: Json | null
           phone?: string | null
           rar_authorization?: string | null
           specialties?: string[] | null
@@ -322,6 +324,7 @@ export type Database = {
           id?: string
           latitude?: number | null
           longitude?: number | null
+          operating_hours?: Json | null
           phone?: string | null
           rar_authorization?: string | null
           specialties?: string[] | null

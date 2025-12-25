@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useMemo } from 'react';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -24,8 +24,18 @@ import {
 import { toast } from 'sonner';
 import { format, addDays, isBefore, startOfToday } from 'date-fns';
 import { ro } from 'date-fns/locale';
-import { CalendarIcon, Clock, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+interface DaySchedule {
+  open: string;
+  close: string;
+  closed: boolean;
+}
+
+interface OperatingHours {
+  [key: string]: DaySchedule;
+}
 
 const SERVICE_TYPES = [
   { value: 'revizie', label: 'Revizie & Întreținere' },
@@ -40,11 +50,11 @@ const SERVICE_TYPES = [
   { value: 'altele', label: 'Altele' },
 ];
 
-const TIME_SLOTS = [
-  '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
-  '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
-  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-  '17:00', '17:30',
+const ALL_TIME_SLOTS = [
+  '06:00', '06:30', '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
+  '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
+  '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30',
 ];
 
 interface AppointmentBookingProps {
@@ -60,6 +70,66 @@ const AppointmentBooking = ({ garageId, garageName }: AppointmentBookingProps) =
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [serviceType, setServiceType] = useState<string>('');
   const [notes, setNotes] = useState('');
+
+  // Fetch garage operating hours
+  const { data: garageProfile } = useQuery({
+    queryKey: ['garage-profile', garageId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('operating_hours')
+        .eq('user_id', garageId)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: open,
+  });
+
+  const operatingHours = garageProfile?.operating_hours as unknown as OperatingHours | null;
+
+  // Get available time slots based on selected date and operating hours
+  const availableTimeSlots = useMemo(() => {
+    if (!selectedDate) {
+      return ALL_TIME_SLOTS.slice(4, 24); // Default 08:00 - 18:00
+    }
+
+    if (!operatingHours) {
+      // Default schedule if no operating hours set
+      if (selectedDate.getDay() === 0) return []; // Sunday closed
+      if (selectedDate.getDay() === 6) return ALL_TIME_SLOTS.slice(6, 16); // Saturday 09:00 - 14:00
+      return ALL_TIME_SLOTS.slice(4, 24); // Weekdays 08:00 - 18:00
+    }
+
+    const dayOfWeek = selectedDate.getDay().toString();
+    const daySchedule = operatingHours[dayOfWeek];
+
+    if (!daySchedule || daySchedule.closed) {
+      return [];
+    }
+
+    const openTime = daySchedule.open || '08:00';
+    const closeTime = daySchedule.close || '18:00';
+
+    return ALL_TIME_SLOTS.filter((time) => {
+      return time >= openTime && time < closeTime;
+    });
+  }, [selectedDate, operatingHours]);
+
+  // Check if a date is closed
+  const isDateClosed = (date: Date) => {
+    if (!operatingHours) {
+      return date.getDay() === 0; // Default: closed on Sunday
+    }
+    const dayOfWeek = date.getDay().toString();
+    const daySchedule = operatingHours[dayOfWeek];
+    return daySchedule?.closed === true;
+  };
+
+  const isDateDisabled = (date: Date) => {
+    return isBefore(date, startOfToday()) || isDateClosed(date);
+  };
 
   const createAppointment = useMutation({
     mutationFn: async () => {
@@ -114,11 +184,11 @@ const AppointmentBooking = ({ garageId, garageName }: AppointmentBookingProps) =
       toast.error('Te rog completează toate câmpurile obligatorii');
       return;
     }
+    if (availableTimeSlots.length === 0) {
+      toast.error('Service-ul este închis în ziua selectată');
+      return;
+    }
     createAppointment.mutate();
-  };
-
-  const isDateDisabled = (date: Date) => {
-    return isBefore(date, startOfToday()) || date.getDay() === 0; // Disable past dates and Sundays
   };
 
   return (
@@ -142,7 +212,10 @@ const AppointmentBooking = ({ garageId, garageName }: AppointmentBookingProps) =
               <Calendar
                 mode="single"
                 selected={selectedDate}
-                onSelect={setSelectedDate}
+                onSelect={(date) => {
+                  setSelectedDate(date);
+                  setSelectedTime(''); // Reset time when date changes
+                }}
                 disabled={isDateDisabled}
                 locale={ro}
                 fromDate={startOfToday()}
@@ -160,20 +233,26 @@ const AppointmentBooking = ({ garageId, garageName }: AppointmentBookingProps) =
           {/* Time Selection */}
           <div className="space-y-2">
             <Label>Selectează ora *</Label>
-            <div className="grid grid-cols-4 gap-2">
-              {TIME_SLOTS.map((time) => (
-                <Button
-                  key={time}
-                  type="button"
-                  variant={selectedTime === time ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSelectedTime(time)}
-                  className="text-xs"
-                >
-                  {time}
-                </Button>
-              ))}
-            </div>
+            {availableTimeSlots.length > 0 ? (
+              <div className="grid grid-cols-4 gap-2">
+                {availableTimeSlots.map((time) => (
+                  <Button
+                    key={time}
+                    type="button"
+                    variant={selectedTime === time ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedTime(time)}
+                    className="text-xs"
+                  >
+                    {time}
+                  </Button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                {selectedDate ? 'Service-ul este închis în această zi' : 'Selectează mai întâi o dată'}
+              </p>
+            )}
           </div>
 
           {/* Service Type */}
