@@ -24,6 +24,11 @@ import Terms from "./pages/Terms";
 import Messages from "./pages/Messages";
 import MyAppointments from "./pages/MyAppointments";
 import NotFound from "./pages/NotFound";
+// Admin pages
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminJobs from "./pages/admin/AdminJobs";
+import AdminReviews from "./pages/admin/AdminReviews";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +60,11 @@ const App = () => (
             <Route path="/mesaje" element={<Messages />} />
             <Route path="/mesaje/:conversationId" element={<Messages />} />
             <Route path="/programari" element={<MyAppointments />} />
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/utilizatori" element={<AdminUsers />} />
+            <Route path="/admin/cereri" element={<AdminJobs />} />
+            <Route path="/admin/recenzii" element={<AdminReviews />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
