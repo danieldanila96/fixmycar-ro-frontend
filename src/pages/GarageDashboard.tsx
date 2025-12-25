@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/layout/Header';
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Car, MapPin, Clock, Calendar, MessageSquare, CheckCircle, Send } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import JobFilters, { JobFiltersState } from '@/components/JobFilters';
 
 interface Job {
   id: string;
@@ -40,6 +41,12 @@ interface Quote {
 const GarageDashboard = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [filters, setFilters] = useState<JobFiltersState>({
+    search: '',
+    category: '',
+    county: '',
+    urgency: '',
+  });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -128,6 +135,52 @@ const GarageDashboard = () => {
   const pendingQuotes = myQuotes?.filter(q => q.status === 'sent') || [];
   const acceptedQuotes = myQuotes?.filter(q => q.status === 'accepted') || [];
   const newJobs = availableJobs?.filter(j => !j.has_quoted) || [];
+
+  // Extract unique categories and counties for filter dropdowns
+  const categories = useMemo(() => {
+    const cats = new Set(availableJobs?.map(j => j.category) || []);
+    return Array.from(cats).sort();
+  }, [availableJobs]);
+
+  const counties = useMemo(() => {
+    const countiesSet = new Set(availableJobs?.map(j => j.county) || []);
+    return Array.from(countiesSet).sort();
+  }, [availableJobs]);
+
+  // Filter jobs based on active filters
+  const filteredJobs = useMemo(() => {
+    if (!availableJobs) return [];
+    
+    return availableJobs.filter(job => {
+      // Search filter
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        const matchesSearch = 
+          job.car_make.toLowerCase().includes(searchLower) ||
+          job.car_model.toLowerCase().includes(searchLower) ||
+          job.description.toLowerCase().includes(searchLower) ||
+          job.category.toLowerCase().includes(searchLower);
+        if (!matchesSearch) return false;
+      }
+
+      // Category filter
+      if (filters.category && filters.category !== 'all' && job.category !== filters.category) {
+        return false;
+      }
+
+      // County filter
+      if (filters.county && filters.county !== 'all' && job.county !== filters.county) {
+        return false;
+      }
+
+      // Urgency filter
+      if (filters.urgency && filters.urgency !== 'all' && job.urgency !== filters.urgency) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [availableJobs, filters]);
 
   if (loading) {
     return (
@@ -339,16 +392,32 @@ const GarageDashboard = () => {
             </TabsList>
 
             <TabsContent value="available">
+              <JobFilters
+                onFiltersChange={setFilters}
+                categories={categories}
+                counties={counties}
+              />
+              
               {jobsLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
-              ) : availableJobs && availableJobs.length > 0 ? (
+              ) : filteredJobs.length > 0 ? (
                 <div className="grid gap-4">
-                  {availableJobs.map((job) => (
+                  {filteredJobs.map((job) => (
                     <JobCard key={job.id} job={job} />
                   ))}
                 </div>
+              ) : availableJobs && availableJobs.length > 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <Car className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium mb-2">Nicio cerere găsită</h3>
+                    <p className="text-muted-foreground">
+                      Nu există cereri care să corespundă filtrelor selectate.
+                    </p>
+                  </CardContent>
+                </Card>
               ) : (
                 <Card>
                   <CardContent className="py-12 text-center">
