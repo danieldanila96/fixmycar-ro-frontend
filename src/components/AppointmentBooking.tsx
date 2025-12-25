@@ -67,20 +67,29 @@ const AppointmentBooking = ({ garageId, garageName }: AppointmentBookingProps) =
         throw new Error('Date incomplete');
       }
 
-      const { error } = await supabase.from('appointments').insert({
+      const { data, error } = await supabase.from('appointments').insert({
         customer_id: user.id,
         garage_id: garageId,
         appointment_date: format(selectedDate, 'yyyy-MM-dd'),
         appointment_time: selectedTime,
         service_type: serviceType,
         notes: notes || null,
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // Send email notification
+      try {
+        await supabase.functions.invoke('send-appointment-email', {
+          body: { appointmentId: data.id, type: 'new' },
+        });
+      } catch (emailError) {
+        console.error('Failed to send email notification:', emailError);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
-      toast.success('Programare creată cu succes!');
+      toast.success('Programare creată cu succes! Vei primi un email de confirmare.');
       setOpen(false);
       resetForm();
     },
