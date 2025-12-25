@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Car, MapPin, Calendar, Clock, Send, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Car, MapPin, Calendar, Clock, Send, CheckCircle, MessageSquare } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -162,6 +162,48 @@ const GarageJobDetails = () => {
           variant: 'destructive',
         });
       }
+    },
+  });
+
+  const startConversationMutation = useMutation({
+    mutationFn: async () => {
+      if (!user || !id || !job) throw new Error('Nu ești autentificat');
+      
+      // Check if conversation already exists
+      const { data: existing } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('job_id', id)
+        .eq('garage_id', user.id)
+        .maybeSingle();
+
+      if (existing) {
+        return existing.id;
+      }
+
+      // Create new conversation
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert({
+          job_id: id,
+          customer_id: job.user_id,
+          garage_id: user.id,
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      return data.id;
+    },
+    onSuccess: (conversationId) => {
+      navigate(`/mesaje/${conversationId}`);
+    },
+    onError: () => {
+      toast({
+        title: 'Eroare',
+        description: 'Nu am putut iniția conversația.',
+        variant: 'destructive',
+      });
     },
   });
 
@@ -317,6 +359,15 @@ const GarageJobDetails = () => {
                         {existingQuote.status === 'accepted' ? 'Acceptată' : existingQuote.status === 'rejected' ? 'Refuzată' : 'În așteptare'}
                       </Badge>
                     </div>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => startConversationMutation.mutate()}
+                      disabled={startConversationMutation.isPending}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      {startConversationMutation.isPending ? 'Se încarcă...' : 'Trimite mesaj clientului'}
+                    </Button>
                   </CardContent>
                 </Card>
               ) : job.status === 'open' || job.status === 'quotes_provided' ? (

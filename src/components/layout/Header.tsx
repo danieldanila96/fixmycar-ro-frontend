@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Car, User, LogOut, Wrench } from "lucide-react";
+import { Menu, X, Car, User, LogOut, Wrench, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -102,6 +102,10 @@ const Header = () => {
                 <DropdownMenuItem onClick={() => navigate('/profil')}>
                   <User className="mr-2 h-4 w-4" />
                   Profil
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/mesaje')}>
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Mesaje
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">

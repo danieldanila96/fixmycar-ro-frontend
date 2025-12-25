@@ -22,6 +22,7 @@ interface Quote {
   estimated_days: number | null;
   status: QuoteStatus;
   created_at: string;
+  garage_id: string;
   garage: {
     id: string;
     business_name: string | null;
@@ -210,6 +211,48 @@ const JobDetails = () => {
       toast({
         title: 'Eroare',
         description: 'Nu am putut actualiza statusul. Încercați din nou.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const startConversationMutation = useMutation({
+    mutationFn: async (garageId: string) => {
+      if (!user || !id) throw new Error('Nu ești autentificat');
+      
+      // Check if conversation already exists
+      const { data: existing } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('job_id', id)
+        .eq('garage_id', garageId)
+        .maybeSingle();
+
+      if (existing) {
+        return existing.id;
+      }
+
+      // Create new conversation
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert({
+          job_id: id,
+          customer_id: user.id,
+          garage_id: garageId,
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      return data.id;
+    },
+    onSuccess: (conversationId) => {
+      navigate(`/mesaje/${conversationId}`);
+    },
+    onError: () => {
+      toast({
+        title: 'Eroare',
+        description: 'Nu am putut iniția conversația.',
         variant: 'destructive',
       });
     },
@@ -473,18 +516,29 @@ const JobDetails = () => {
                         {quote.message && (
                           <p className="text-sm text-muted-foreground mb-4">{quote.message}</p>
                         )}
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
                           <span className="text-xs text-muted-foreground">
                             Primită pe {formatDate(quote.created_at)}
                           </span>
-                          {job.status === 'open' || job.status === 'quotes_provided' ? (
+                          <div className="flex gap-2">
                             <Button 
-                              onClick={() => acceptQuoteMutation.mutate(quote.id)}
-                              disabled={acceptQuoteMutation.isPending}
+                              variant="outline"
+                              size="sm"
+                              onClick={() => startConversationMutation.mutate(quote.garage_id)}
+                              disabled={startConversationMutation.isPending}
                             >
-                              {acceptQuoteMutation.isPending ? 'Se procesează...' : 'Acceptă oferta'}
+                              <MessageSquare className="h-4 w-4 mr-1" />
+                              Mesaj
                             </Button>
-                          ) : null}
+                            {(job.status === 'open' || job.status === 'quotes_provided') && (
+                              <Button 
+                                onClick={() => acceptQuoteMutation.mutate(quote.id)}
+                                disabled={acceptQuoteMutation.isPending}
+                              >
+                                {acceptQuoteMutation.isPending ? 'Se procesează...' : 'Acceptă oferta'}
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>

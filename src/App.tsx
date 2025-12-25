@@ -17,6 +17,7 @@ import Profile from "./pages/Profile";
 import HowItWorks from "./pages/HowItWorks";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,8 @@ const App = () => (
             <Route path="/cum-functioneaza" element={<HowItWorks />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/termeni" element={<Terms />} />
+            <Route path="/mesaje" element={<Messages />} />
+            <Route path="/mesaje/:conversationId" element={<Messages />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
