@@ -62,7 +62,6 @@ interface Review {
   rating: number;
   comment: string | null;
   created_at: string;
-  customer_id: string;
   job_id: string;
 }
 
@@ -90,8 +89,9 @@ const GaragePublicProfile = () => {
     queryKey: ['garage-reviews', garageId],
     queryFn: async () => {
       if (!garageId) return [];
+      // Use reviews_public view to avoid exposing customer_id
       const { data, error } = await supabase
-        .from('reviews')
+        .from('reviews_public')
         .select('*')
         .eq('garage_id', garageId)
         .order('created_at', { ascending: false });
