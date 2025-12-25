@@ -467,9 +467,14 @@ const JobDetails = () => {
                           <div className="flex items-center gap-3">
                             <CheckCircle className="h-5 w-5 text-green-600" />
                             <div>
-                              <CardTitle className="text-base">
-                                {acceptedQuote.garage?.business_name || acceptedQuote.garage?.full_name || 'Service Auto'}
-                              </CardTitle>
+                              <Link 
+                                to={`/service/${acceptedQuote.garage_id}`}
+                                className="hover:text-primary transition-colors"
+                              >
+                                <CardTitle className="text-base hover:underline">
+                                  {acceptedQuote.garage?.business_name || acceptedQuote.garage?.full_name || 'Service Auto'}
+                                </CardTitle>
+                              </Link>
                               <CardDescription>Ofertă acceptată</CardDescription>
                             </div>
                           </div>
@@ -506,9 +511,14 @@ const JobDetails = () => {
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div>
-                            <CardTitle className="text-base">
-                              {quote.garage?.business_name || quote.garage?.full_name || 'Service Auto'}
-                            </CardTitle>
+                            <Link 
+                              to={`/service/${quote.garage_id}`} 
+                              className="hover:text-primary transition-colors"
+                            >
+                              <CardTitle className="text-base hover:underline">
+                                {quote.garage?.business_name || quote.garage?.full_name || 'Service Auto'}
+                              </CardTitle>
+                            </Link>
                             <div className="flex items-center gap-2 mt-1">
                               {quote.garage?.average_rating ? (
                                 <span className="flex items-center gap-1 text-sm">
