@@ -37,6 +37,7 @@ interface Job {
   status: string;
   created_at: string;
   needed_by: string | null;
+  images: string[] | null;
 }
 
 interface ExistingQuote {
@@ -291,6 +292,29 @@ const GarageJobDetails = () => {
                     <h3 className="font-medium mb-2">Descrierea problemei</h3>
                     <p className="text-muted-foreground whitespace-pre-wrap">{job.description}</p>
                   </div>
+
+                  {job.images && job.images.length > 0 && (
+                    <div>
+                      <h3 className="font-medium mb-2">Poze atașate</h3>
+                      <div className="grid grid-cols-2 gap-2">
+                        {job.images.map((img, index) => (
+                          <a
+                            key={index}
+                            href={img}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block aspect-video overflow-hidden rounded-lg border hover:opacity-90 transition-opacity"
+                          >
+                            <img
+                              src={img}
+                              alt={`Poză ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <Separator />
 

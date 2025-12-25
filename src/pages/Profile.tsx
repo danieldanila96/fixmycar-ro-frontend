@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { ImageUpload } from '@/components/ImageUpload';
 import { User, Building2, Phone, MapPin, FileText, Star, Loader2 } from 'lucide-react';
 
 const customerSchema = z.object({
@@ -102,6 +103,7 @@ const Profile = () => {
           business_address: data.business_address,
           rar_authorization: data.rar_authorization,
           description: data.description,
+          avatar_url: data.avatar_url,
         })
         .eq('user_id', user.id);
       
@@ -207,6 +209,17 @@ const Profile = () => {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Avatar Upload */}
+                <div className="flex justify-center mb-6">
+                  <ImageUpload
+                    bucket="avatars"
+                    folder={user?.id || ''}
+                    currentImage={formData.avatar_url}
+                    onUpload={(url) => handleChange('avatar_url', url)}
+                    variant="avatar"
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="full_name">Nume complet</Label>
                   {isEditing ? (
