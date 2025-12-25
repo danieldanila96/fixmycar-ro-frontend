@@ -40,10 +40,9 @@ const Header = () => {
   }, [user]);
 
   const navLinks = [
-    { href: "/", label: "Acasă" },
-    { href: "#cum-functioneaza", label: "Cum funcționează" },
-    { href: "#pentru-garaje", label: "Pentru Garaje" },
-    { href: "#contact", label: "Contact" },
+    { href: "/", label: "Acasă", isRoute: true },
+    { href: "/cum-functioneaza", label: "Cum funcționează", isRoute: true },
+    { href: "/contact", label: "Contact", isRoute: true },
   ];
 
   const handleSignOut = async () => {
@@ -75,13 +74,13 @@ const Header = () => {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.href}
-              href={link.href}
+              to={link.href}
               className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
@@ -138,14 +137,14 @@ const Header = () => {
         <div className="md:hidden absolute top-full left-0 right-0 bg-card border-b border-border animate-fade-in">
           <nav className="container py-4 flex flex-col gap-1">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
-                href={link.href}
+                to={link.href}
                 onClick={() => setIsMenuOpen(false)}
                 className="px-4 py-3 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
             <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
               {user ? (
