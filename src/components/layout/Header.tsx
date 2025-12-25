@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Car, User, LogOut, Wrench, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +19,7 @@ const Header = () => {
   const [userType, setUserType] = useState<'customer' | 'garage' | null>(null);
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const unreadCount = useUnreadMessages();
 
   useEffect(() => {
     const fetchUserType = async () => {
@@ -103,9 +106,16 @@ const Header = () => {
                   <User className="mr-2 h-4 w-4" />
                   Profil
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/mesaje')}>
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Mesaje
+                <DropdownMenuItem onClick={() => navigate('/mesaje')} className="flex items-center justify-between">
+                  <span className="flex items-center">
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Mesaje
+                  </span>
+                  {unreadCount > 0 && (
+                    <Badge variant="destructive" className="ml-2 h-5 min-w-5 flex items-center justify-center text-xs">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Badge>
+                  )}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
@@ -156,6 +166,17 @@ const Header = () => {
                   <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate(getDashboardPath()); }}>
                     {userType === 'garage' ? <Wrench className="mr-2 h-4 w-4" /> : <User className="mr-2 h-4 w-4" />}
                     {getDashboardLabel()}
+                  </Button>
+                  <Button variant="outline" className="w-full justify-between" onClick={() => { setIsMenuOpen(false); navigate('/mesaje'); }}>
+                    <span className="flex items-center">
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Mesaje
+                    </span>
+                    {unreadCount > 0 && (
+                      <Badge variant="destructive" className="h-5 min-w-5 flex items-center justify-center text-xs">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </Badge>
+                    )}
                   </Button>
                   <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/profil'); }}>
                     <User className="mr-2 h-4 w-4" />
