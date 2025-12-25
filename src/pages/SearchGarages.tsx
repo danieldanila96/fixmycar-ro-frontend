@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import GarageMap from '@/components/GarageMap';
+import FavoriteButton from '@/components/FavoriteButton';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,7 +29,8 @@ import {
   Image as ImageIcon,
   Wrench,
   List,
-  Map
+  Map,
+  Heart
 } from 'lucide-react';
 
 interface GarageProfile {
@@ -77,6 +79,7 @@ const SearchGarages = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [sortBy, setSortBy] = useState<'rating' | 'reviews' | 'name'>('rating');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   const { data: garages, isLoading } = useQuery({
     queryKey: ['all-garages'],
@@ -92,10 +95,31 @@ const SearchGarages = () => {
     },
   });
 
+  const { data: favorites = [] } = useQuery({
+    queryKey: ['user-favorites-list'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('garage_id')
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      return data.map(f => f.garage_id);
+    },
+  });
+
   const filteredGarages = useMemo(() => {
     if (!garages) return [];
 
     let result = garages.filter(garage => {
+      // Favorites filter
+      if (showFavoritesOnly && !favorites.includes(garage.user_id)) {
+        return false;
+      }
+
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -136,16 +160,17 @@ const SearchGarages = () => {
     });
 
     return result;
-  }, [garages, searchQuery, selectedCounty, selectedCategory, sortBy]);
+  }, [garages, searchQuery, selectedCounty, selectedCategory, sortBy, showFavoritesOnly, favorites]);
 
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedCounty('');
     setSelectedCategory('');
     setSortBy('rating');
+    setShowFavoritesOnly(false);
   };
 
-  const hasActiveFilters = searchQuery || selectedCounty || selectedCategory;
+  const hasActiveFilters = searchQuery || selectedCounty || selectedCategory || showFavoritesOnly;
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -230,6 +255,16 @@ const SearchGarages = () => {
                 </SelectContent>
               </Select>
 
+              <Button 
+                variant={showFavoritesOnly ? 'default' : 'outline'}
+                size="sm" 
+                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                className="flex items-center gap-1"
+              >
+                <Heart className={`h-4 w-4 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+                <span className="hidden sm:inline">Favorite</span>
+              </Button>
+
               {hasActiveFilters && (
                 <Button variant="ghost" size="sm" onClick={clearFilters} className="flex items-center gap-1">
                   <X className="h-4 w-4" />
@@ -275,7 +310,12 @@ const SearchGarages = () => {
                   to={`/service/${garage.user_id}`}
                   className="group"
                 >
-                  <Card className="h-full hover:shadow-lg transition-shadow overflow-hidden">
+                  <Card className="h-full hover:shadow-lg transition-shadow overflow-hidden relative">
+                    {/* Favorite Button */}
+                    <div className="absolute top-2 right-2 z-10">
+                      <FavoriteButton garageId={garage.user_id} className="bg-background/80 backdrop-blur-sm" />
+                    </div>
+                    
                     {/* Gallery Preview */}
                     {garage.gallery_images && garage.gallery_images.length > 0 ? (
                       <div className="aspect-video relative overflow-hidden">
