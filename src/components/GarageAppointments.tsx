@@ -101,10 +101,26 @@ const GarageAppointments = () => {
         .eq('id', id);
       
       if (error) throw error;
+
+      // Send email notification for confirmed or cancelled status
+      if (status === 'confirmed' || status === 'cancelled') {
+        try {
+          await supabase.functions.invoke('send-appointment-email', {
+            body: { appointmentId: id, type: status },
+          });
+        } catch (emailError) {
+          console.error('Failed to send email notification:', emailError);
+        }
+      }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['garage-appointments'] });
-      toast.success('Programare actualizată');
+      const message = variables.status === 'confirmed' 
+        ? 'Programare confirmată! Clientul a fost notificat prin email.'
+        : variables.status === 'cancelled'
+        ? 'Programare anulată. Clientul a fost notificat.'
+        : 'Programare actualizată';
+      toast.success(message);
     },
     onError: () => {
       toast.error('Eroare la actualizarea programării');
