@@ -20,6 +20,7 @@ import HowItWorks from "./pages/HowItWorks";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import Messages from "./pages/Messages";
+import MyAppointments from "./pages/MyAppointments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/termeni" element={<Terms />} />
             <Route path="/mesaje" element={<Messages />} />
             <Route path="/mesaje/:conversationId" element={<Messages />} />
+            <Route path="/programari" element={<MyAppointments />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

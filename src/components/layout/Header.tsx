@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Car, User, LogOut, Wrench, MessageSquare } from "lucide-react";
+import { Menu, X, Car, User, LogOut, Wrench, MessageSquare, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
@@ -107,6 +107,12 @@ const Header = () => {
                   <User className="mr-2 h-4 w-4" />
                   Profil
                 </DropdownMenuItem>
+                {userType === 'customer' && (
+                  <DropdownMenuItem onClick={() => navigate('/programari')}>
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    Programările mele
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => navigate('/mesaje')} className="flex items-center justify-between">
                   <span className="flex items-center">
                     <MessageSquare className="mr-2 h-4 w-4" />
