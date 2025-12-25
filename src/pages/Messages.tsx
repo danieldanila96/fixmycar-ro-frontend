@@ -183,13 +183,18 @@ const Messages = () => {
 
     const unreadMessages = messages.filter(m => !m.is_read && m.sender_id !== user.id);
     if (unreadMessages.length > 0) {
-      supabase
-        .from('messages')
-        .update({ is_read: true })
-        .in('id', unreadMessages.map(m => m.id))
-        .then();
+      const markAsRead = async () => {
+        await supabase
+          .from('messages')
+          .update({ is_read: true })
+          .in('id', unreadMessages.map(m => m.id));
+        
+        // Invalidate queries to refresh unread count
+        queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+      };
+      markAsRead();
     }
-  }, [messages, user, conversationId]);
+  }, [messages, user, conversationId, queryClient]);
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
