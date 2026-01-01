@@ -32,6 +32,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminJobs from "./pages/admin/AdminJobs";
 import AdminReviews from "./pages/admin/AdminReviews";
+import AdminKYC from "./pages/admin/AdminKYC";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="/payment-success" element={<PaymentSuccess />} />
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/kyc" element={<AdminKYC />} />
             <Route path="/admin/utilizatori" element={<AdminUsers />} />
             <Route path="/admin/cereri" element={<AdminJobs />} />
             <Route path="/admin/recenzii" element={<AdminReviews />} />

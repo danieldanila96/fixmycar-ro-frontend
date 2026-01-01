@@ -3,16 +3,16 @@ import {
   LayoutDashboard, 
   Users, 
   FileText, 
-  MessageSquare, 
-  Settings,
   Shield,
   ArrowLeft,
-  Star
+  Star,
+  ShieldCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
+  { title: 'Verificare KYC', url: '/admin/kyc', icon: ShieldCheck },
   { title: 'Utilizatori', url: '/admin/utilizatori', icon: Users },
   { title: 'Cereri', url: '/admin/cereri', icon: FileText },
   { title: 'Recenzii', url: '/admin/recenzii', icon: Star },
