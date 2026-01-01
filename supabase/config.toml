@@ -20,3 +20,6 @@ verify_jwt = true
 
 [functions.send-itp-reminders]
 verify_jwt = false
+
+[functions.send-kyc-notification]
+verify_jwt = true

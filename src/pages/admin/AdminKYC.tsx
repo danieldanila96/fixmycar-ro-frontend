@@ -155,13 +155,37 @@ const AdminKYC = () => {
         .eq('user_id', userId);
       
       if (error) throw error;
+
+      // Send email notification for approved/rejected status
+      if (status === 'approved' || status === 'rejected') {
+        try {
+          const { error: notificationError } = await supabase.functions.invoke('send-kyc-notification', {
+            body: {
+              garageId: userId,
+              status,
+              rejectionReason: status === 'rejected' ? rejectionReason : undefined,
+            },
+          });
+          
+          if (notificationError) {
+            console.error('Failed to send KYC notification:', notificationError);
+          }
+        } catch (err) {
+          console.error('Error sending KYC notification:', err);
+        }
+      }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin-kyc-garages'] });
       setReviewDialogOpen(false);
       setSelectedGarage(null);
       setRejectionReason('');
-      toast.success('Statusul KYC a fost actualizat');
+      const message = variables.status === 'approved' 
+        ? 'Service-ul a fost aprobat și notificat' 
+        : variables.status === 'rejected'
+          ? 'Service-ul a fost respins și notificat'
+          : 'Statusul KYC a fost actualizat';
+      toast.success(message);
     },
     onError: () => {
       toast.error('Eroare la actualizarea statusului');
