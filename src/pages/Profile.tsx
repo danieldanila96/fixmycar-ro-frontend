@@ -17,7 +17,9 @@ import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
 import { GalleryUpload } from '@/components/GalleryUpload';
 import OperatingHoursEditor, { OperatingHours } from '@/components/OperatingHoursEditor';
-import { User, Building2, Phone, MapPin, FileText, Star, Loader2, Wrench, Navigation } from 'lucide-react';
+import { RARCategorySelector, RARCategoryBadges, RARCategory } from '@/components/RARCategoryBadges';
+import { KYCDocumentUpload } from '@/components/KYCDocumentUpload';
+import { User, Building2, Phone, MapPin, FileText, Star, Loader2, Wrench, Navigation, Shield } from 'lucide-react';
 
 const customerSchema = z.object({
   full_name: z.string().min(2, 'Numele trebuie să aibă cel puțin 2 caractere').max(100),
@@ -57,6 +59,15 @@ interface Profile {
   latitude: number | null;
   longitude: number | null;
   operating_hours: OperatingHours | null;
+  rar_categories: RARCategory[] | null;
+  kyc_status: string | null;
+}
+
+interface GarageDocument {
+  document_type: string;
+  file_url: string;
+  file_name: string;
+  status: string;
 }
 
 const SERVICE_CATEGORIES = [
@@ -112,6 +123,22 @@ const Profile = () => {
     }
   }, [profile]);
 
+  // Fetch KYC documents for garages
+  const { data: kycDocuments = [], refetch: refetchDocuments } = useQuery({
+    queryKey: ['garage-documents', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('garage_documents')
+        .select('document_type, file_url, file_name, status')
+        .eq('garage_id', user.id);
+      
+      if (error) throw error;
+      return data as GarageDocument[];
+    },
+    enabled: !!user && profile?.user_type === 'garage',
+  });
+
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<Profile>) => {
       if (!user) throw new Error('Nu ești autentificat');
@@ -133,6 +160,7 @@ const Profile = () => {
           latitude: data.latitude,
           longitude: data.longitude,
           operating_hours: data.operating_hours ? JSON.parse(JSON.stringify(data.operating_hours)) : null,
+          rar_categories: data.rar_categories,
         })
         .eq('user_id', user.id);
       
@@ -409,6 +437,30 @@ const Profile = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* RAR Categories Section */}
+                    <div className="space-y-3">
+                      <Label className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" /> Categorii RAR Autorizate
+                      </Label>
+                      {isEditing ? (
+                        <RARCategorySelector
+                          selected={(formData.rar_categories || []) as RARCategory[]}
+                          onChange={(categories) => setFormData(prev => ({ ...prev, rar_categories: categories }))}
+                        />
+                      ) : (
+                        <div>
+                          {profile.rar_categories && profile.rar_categories.length > 0 ? (
+                            <RARCategoryBadges categories={profile.rar_categories as RARCategory[]} />
+                          ) : (
+                            <p className="text-muted-foreground">Nicio categorie RAR selectată</p>
+                          )}
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Selectează categoriile de lucrări pentru care ești autorizat RAR
+                      </p>
+                    </div>
                   </>
                 )}
 
@@ -570,6 +622,17 @@ const Profile = () => {
               </form>
             </CardContent>
           </Card>
+
+          {/* KYC Document Upload Section - Outside the form, always visible for garages */}
+          {isGarage && (
+            <div className="mt-6">
+              <KYCDocumentUpload
+                existingDocuments={kycDocuments}
+                onDocumentsChange={() => refetchDocuments()}
+                kycStatus={profile.kyc_status || 'pending'}
+              />
+            </div>
+          )}
         </div>
       </main>
       <Footer />
