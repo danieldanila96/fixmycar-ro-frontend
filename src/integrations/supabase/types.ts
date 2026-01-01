@@ -171,6 +171,87 @@ export type Database = {
         }
         Relationships: []
       }
+      garage_documents: {
+        Row: {
+          document_type: string
+          file_name: string
+          file_url: string
+          garage_id: string
+          id: string
+          reviewed_at: string | null
+          reviewer_notes: string | null
+          status: string | null
+          uploaded_at: string
+        }
+        Insert: {
+          document_type: string
+          file_name: string
+          file_url: string
+          garage_id: string
+          id?: string
+          reviewed_at?: string | null
+          reviewer_notes?: string | null
+          status?: string | null
+          uploaded_at?: string
+        }
+        Update: {
+          document_type?: string
+          file_name?: string
+          file_url?: string
+          garage_id?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewer_notes?: string | null
+          status?: string | null
+          uploaded_at?: string
+        }
+        Relationships: []
+      }
+      itp_reminders: {
+        Row: {
+          car_make: string | null
+          car_model: string | null
+          civ: string | null
+          created_at: string
+          id: string
+          itp_expiry_date: string
+          reminder_sent_1_day: boolean | null
+          reminder_sent_30_days: boolean | null
+          reminder_sent_7_days: boolean | null
+          updated_at: string
+          user_id: string
+          vin: string
+        }
+        Insert: {
+          car_make?: string | null
+          car_model?: string | null
+          civ?: string | null
+          created_at?: string
+          id?: string
+          itp_expiry_date: string
+          reminder_sent_1_day?: boolean | null
+          reminder_sent_30_days?: boolean | null
+          reminder_sent_7_days?: boolean | null
+          updated_at?: string
+          user_id: string
+          vin: string
+        }
+        Update: {
+          car_make?: string | null
+          car_model?: string | null
+          civ?: string | null
+          created_at?: string
+          id?: string
+          itp_expiry_date?: string
+          reminder_sent_1_day?: boolean | null
+          reminder_sent_30_days?: boolean | null
+          reminder_sent_7_days?: boolean | null
+          updated_at?: string
+          user_id?: string
+          vin?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           car_make: string
@@ -178,17 +259,20 @@ export type Database = {
           car_year: number | null
           category: string
           city: string
+          civ: string | null
           county: string
           created_at: string
           description: string
           fuel_type: string | null
           id: string
           images: string[] | null
+          itp_expiry_date: string | null
           needed_by: string | null
           status: Database["public"]["Enums"]["job_status"]
           updated_at: string
           urgency: string | null
           user_id: string
+          vin: string | null
         }
         Insert: {
           car_make: string
@@ -196,17 +280,20 @@ export type Database = {
           car_year?: number | null
           category: string
           city: string
+          civ?: string | null
           county: string
           created_at?: string
           description: string
           fuel_type?: string | null
           id?: string
           images?: string[] | null
+          itp_expiry_date?: string | null
           needed_by?: string | null
           status?: Database["public"]["Enums"]["job_status"]
           updated_at?: string
           urgency?: string | null
           user_id: string
+          vin?: string | null
         }
         Update: {
           car_make?: string
@@ -214,17 +301,20 @@ export type Database = {
           car_year?: number | null
           category?: string
           city?: string
+          civ?: string | null
           county?: string
           created_at?: string
           description?: string
           fuel_type?: string | null
           id?: string
           images?: string[] | null
+          itp_expiry_date?: string | null
           needed_by?: string | null
           status?: Database["public"]["Enums"]["job_status"]
           updated_at?: string
           urgency?: string | null
           user_id?: string
+          vin?: string | null
         }
         Relationships: []
       }
@@ -269,19 +359,29 @@ export type Database = {
           average_rating: number | null
           business_address: string | null
           business_name: string | null
+          caen_code: string | null
           city: string | null
           county: string | null
           created_at: string
+          cui: string | null
           description: string | null
           full_name: string | null
           gallery_images: string[] | null
           id: string
+          kyc_documents: Json | null
+          kyc_rejection_reason: string | null
+          kyc_reviewed_at: string | null
+          kyc_status: Database["public"]["Enums"]["kyc_status"] | null
+          kyc_submitted_at: string | null
           latitude: number | null
           longitude: number | null
           operating_hours: Json | null
           phone: string | null
           rar_authorization: string | null
+          rar_categories: Database["public"]["Enums"]["rar_category"][] | null
           specialties: string[] | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           total_reviews: number | null
           updated_at: string
           user_id: string
@@ -292,19 +392,29 @@ export type Database = {
           average_rating?: number | null
           business_address?: string | null
           business_name?: string | null
+          caen_code?: string | null
           city?: string | null
           county?: string | null
           created_at?: string
+          cui?: string | null
           description?: string | null
           full_name?: string | null
           gallery_images?: string[] | null
           id?: string
+          kyc_documents?: Json | null
+          kyc_rejection_reason?: string | null
+          kyc_reviewed_at?: string | null
+          kyc_status?: Database["public"]["Enums"]["kyc_status"] | null
+          kyc_submitted_at?: string | null
           latitude?: number | null
           longitude?: number | null
           operating_hours?: Json | null
           phone?: string | null
           rar_authorization?: string | null
+          rar_categories?: Database["public"]["Enums"]["rar_category"][] | null
           specialties?: string[] | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           total_reviews?: number | null
           updated_at?: string
           user_id: string
@@ -315,19 +425,29 @@ export type Database = {
           average_rating?: number | null
           business_address?: string | null
           business_name?: string | null
+          caen_code?: string | null
           city?: string | null
           county?: string | null
           created_at?: string
+          cui?: string | null
           description?: string | null
           full_name?: string | null
           gallery_images?: string[] | null
           id?: string
+          kyc_documents?: Json | null
+          kyc_rejection_reason?: string | null
+          kyc_reviewed_at?: string | null
+          kyc_status?: Database["public"]["Enums"]["kyc_status"] | null
+          kyc_submitted_at?: string | null
           latitude?: number | null
           longitude?: number | null
           operating_hours?: Json | null
           phone?: string | null
           rar_authorization?: string | null
+          rar_categories?: Database["public"]["Enums"]["rar_category"][] | null
           specialties?: string[] | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           total_reviews?: number | null
           updated_at?: string
           user_id?: string
@@ -574,8 +694,24 @@ export type Database = {
         | "booked"
         | "completed"
         | "cancelled"
+      kyc_status:
+        | "pending"
+        | "documents_submitted"
+        | "under_review"
+        | "approved"
+        | "rejected"
       payment_status: "pending" | "paid" | "refunded"
       quote_status: "sent" | "accepted" | "rejected"
+      rar_category:
+        | "mecanica"
+        | "electrica"
+        | "caroserie"
+        | "vopsitorie"
+        | "itp"
+        | "ac_clima"
+        | "anvelope"
+        | "diagnoza"
+        | "geometrie"
       user_type: "customer" | "garage"
     }
     CompositeTypes: {
@@ -712,8 +848,26 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
+      kyc_status: [
+        "pending",
+        "documents_submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       payment_status: ["pending", "paid", "refunded"],
       quote_status: ["sent", "accepted", "rejected"],
+      rar_category: [
+        "mecanica",
+        "electrica",
+        "caroserie",
+        "vopsitorie",
+        "itp",
+        "ac_clima",
+        "anvelope",
+        "diagnoza",
+        "geometrie",
+      ],
       user_type: ["customer", "garage"],
     },
   },

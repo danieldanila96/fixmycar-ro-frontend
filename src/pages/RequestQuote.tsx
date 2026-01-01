@@ -14,6 +14,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { MultiImageUpload } from "@/components/MultiImageUpload";
+import { VINInput } from "@/components/VINInput";
+import { TermsAcceptance } from "@/components/TermsAcceptance";
 
 const jobSchema = z.object({
   carMake: z.string().min(1, "Selectează marca").max(100),
@@ -25,6 +27,8 @@ const jobSchema = z.object({
   urgency: z.string().min(1, "Selectează urgența").max(50),
   city: z.string().min(1, "Introdu localitatea").max(100),
   county: z.string().min(1, "Selectează județul").max(100),
+  vin: z.string().max(17).optional(),
+  civ: z.string().max(9).optional(),
 });
 
 interface FormData {
@@ -42,6 +46,8 @@ interface FormData {
   phone: string;
   agreeTerms: boolean;
   images: string[];
+  vin: string;
+  civ: string;
 }
 
 const initialFormData: FormData = {
@@ -59,6 +65,8 @@ const initialFormData: FormData = {
   phone: "",
   agreeTerms: false,
   images: [],
+  vin: "",
+  civ: "",
 };
 
 const steps = [
@@ -220,6 +228,8 @@ const RequestQuote = () => {
           urgency: formData.urgency,
           status: 'open',
           images: formData.images,
+          vin: formData.vin || null,
+          civ: formData.civ || null,
         })
         .select('id')
         .single();
@@ -402,6 +412,16 @@ const RequestQuote = () => {
                     </Select>
                     {errors.fuelType && <p className="text-sm text-destructive">{errors.fuelType}</p>}
                   </div>
+                </div>
+
+                {/* VIN/CIV Input */}
+                <div className="mt-6">
+                  <VINInput
+                    vin={formData.vin}
+                    civ={formData.civ}
+                    onVINChange={(v) => updateFormData("vin", v)}
+                    onCIVChange={(v) => updateFormData("civ", v)}
+                  />
                 </div>
               </div>
             )}
