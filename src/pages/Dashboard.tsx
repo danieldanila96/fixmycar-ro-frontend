@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Car, Clock, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import ITPRemindersManager from '@/components/ITPRemindersManager';
 
 type JobStatus = 'open' | 'quotes_provided' | 'booked' | 'completed' | 'cancelled';
 
@@ -211,6 +212,11 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground">Finalizate</p>
               </CardContent>
             </Card>
+          </div>
+
+          {/* ITP Reminders Section */}
+          <div className="mb-8">
+            <ITPRemindersManager />
           </div>
 
           {/* Jobs Tabs */}
