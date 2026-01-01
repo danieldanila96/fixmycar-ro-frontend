@@ -19,7 +19,9 @@ import {
   Image as ImageIcon,
   MessageSquare,
   User,
-  Wrench
+  Wrench,
+  ShieldCheck,
+  Shield
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ro } from 'date-fns/locale';
@@ -39,6 +41,11 @@ const SERVICE_CATEGORIES = [
   { value: "altele", label: "Altele" },
 ];
 
+import { RARCategoryBadges, RARCategory } from '@/components/RARCategoryBadges';
+import { Database } from '@/integrations/supabase/types';
+
+type KycStatus = Database['public']['Enums']['kyc_status'];
+
 interface GarageProfile {
   id: string;
   user_id: string;
@@ -55,6 +62,8 @@ interface GarageProfile {
   total_reviews: number | null;
   gallery_images: string[] | null;
   specialties: string[] | null;
+  rar_categories: RARCategory[] | null;
+  kyc_status: KycStatus | null;
 }
 
 interface Review {
@@ -187,9 +196,17 @@ const GaragePublicProfile = () => {
 
                     {/* Info */}
                     <div className="flex-1">
-                      <h1 className="text-2xl font-bold text-foreground mb-2">
-                        {garage.business_name || 'Service Auto'}
-                      </h1>
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <h1 className="text-2xl font-bold text-foreground">
+                          {garage.business_name || 'Service Auto'}
+                        </h1>
+                        {garage.kyc_status === 'approved' && (
+                          <Badge variant="default" className="bg-green-600 hover:bg-green-700 flex items-center gap-1">
+                            <ShieldCheck className="h-3 w-3" />
+                            Verificat
+                          </Badge>
+                        )}
+                      </div>
                       
                       {garage.average_rating !== null && garage.average_rating > 0 && (
                         <div className="flex items-center gap-2 mb-3">
@@ -222,6 +239,21 @@ const GaragePublicProfile = () => {
                       )}
                     </div>
                   </div>
+
+                  {/* RAR Categories */}
+                  {garage.rar_categories && garage.rar_categories.length > 0 && (
+                    <div className="mt-6 pt-6 border-t">
+                      <h3 className="font-semibold mb-3 flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Categorii RAR Autorizate
+                      </h3>
+                      <RARCategoryBadges 
+                        categories={garage.rar_categories} 
+                        size="md"
+                        maxVisible={9}
+                      />
+                    </div>
+                  )}
 
                   {/* Specialties */}
                   {garage.specialties && garage.specialties.length > 0 && (

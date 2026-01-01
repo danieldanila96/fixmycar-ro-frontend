@@ -30,8 +30,14 @@ import {
   Wrench,
   List,
   Map,
-  Heart
+  Heart,
+  ShieldCheck
 } from 'lucide-react';
+
+import { RARCategoryBadges, RARCategory } from '@/components/RARCategoryBadges';
+import { Database } from '@/integrations/supabase/types';
+
+type KycStatus = Database['public']['Enums']['kyc_status'];
 
 interface GarageProfile {
   id: string;
@@ -48,6 +54,8 @@ interface GarageProfile {
   specialties: string[] | null;
   latitude: number | null;
   longitude: number | null;
+  rar_categories: RARCategory[] | null;
+  kyc_status: KycStatus | null;
 }
 
 const SERVICE_CATEGORIES = [
@@ -313,8 +321,14 @@ const SearchGarages = () => {
                   className="group"
                 >
                   <Card className="h-full hover:shadow-lg transition-shadow overflow-hidden relative">
-                    {/* Favorite Button */}
-                    <div className="absolute top-2 right-2 z-10">
+                    {/* Favorite Button & KYC Badge */}
+                    <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
+                      {garage.kyc_status === 'approved' && (
+                        <Badge variant="default" className="bg-green-600 hover:bg-green-700 flex items-center gap-1">
+                          <ShieldCheck className="h-3 w-3" />
+                          <span className="hidden sm:inline">Verificat</span>
+                        </Badge>
+                      )}
                       <FavoriteButton garageId={garage.user_id} className="bg-background/80 backdrop-blur-sm" />
                     </div>
                     
@@ -389,8 +403,19 @@ const SearchGarages = () => {
                         </div>
                       </div>
 
-                      {/* Specialties */}
-                      {garage.specialties && garage.specialties.length > 0 && (
+                      {/* RAR Categories */}
+                      {garage.rar_categories && garage.rar_categories.length > 0 && (
+                        <div className="mt-3">
+                          <RARCategoryBadges 
+                            categories={garage.rar_categories} 
+                            size="sm" 
+                            maxVisible={3}
+                          />
+                        </div>
+                      )}
+
+                      {/* Specialties (show if no RAR categories) */}
+                      {(!garage.rar_categories || garage.rar_categories.length === 0) && garage.specialties && garage.specialties.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-3">
                           {garage.specialties.slice(0, 3).map((specialty) => {
                             const cat = SERVICE_CATEGORIES.find(c => c.value === specialty);
