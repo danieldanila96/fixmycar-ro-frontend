@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/layout/Header';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Car, MapPin, Calendar, Clock, Star, Phone, CheckCircle, MessageSquare, ThumbsUp } from 'lucide-react';
+import { ArrowLeft, Car, MapPin, Calendar, Clock, Star, Phone, CheckCircle, MessageSquare, ThumbsUp, CreditCard, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -146,6 +146,46 @@ const JobDetails = () => {
     },
     enabled: !!id && !!user,
   });
+
+  const [payingQuoteId, setPayingQuoteId] = useState<string | null>(null);
+
+  const initiatePaymentMutation = useMutation({
+    mutationFn: async ({ quote, job: jobData }: { quote: Quote; job: Job }) => {
+      const { data, error } = await supabase.functions.invoke('create-booking-payment', {
+        body: {
+          quoteId: quote.id,
+          jobId: jobData.id,
+          amount: quote.price,
+          garageName: quote.garage?.business_name || quote.garage?.full_name || 'Service Auto',
+          jobDescription: `${jobData.car_make} ${jobData.car_model} - ${jobData.category}: ${jobData.description}`,
+        },
+      });
+
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      if (!data?.url) throw new Error('Nu s-a putut crea sesiunea de plată');
+
+      return data.url;
+    },
+    onSuccess: (url) => {
+      // Redirect to Stripe checkout
+      window.location.href = url;
+    },
+    onError: (error) => {
+      setPayingQuoteId(null);
+      toast({
+        title: 'Eroare la plată',
+        description: error instanceof Error ? error.message : 'Nu am putut iniția plata. Încercați din nou.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handlePayment = (quote: Quote) => {
+    if (!job) return;
+    setPayingQuoteId(quote.id);
+    initiatePaymentMutation.mutate({ quote, job });
+  };
 
   const acceptQuoteMutation = useMutation({
     mutationFn: async (quoteId: string) => {
@@ -566,10 +606,20 @@ const JobDetails = () => {
                             </Button>
                             {(job.status === 'open' || job.status === 'quotes_provided') && (
                               <Button 
-                                onClick={() => acceptQuoteMutation.mutate(quote.id)}
-                                disabled={acceptQuoteMutation.isPending}
+                                onClick={() => handlePayment(quote)}
+                                disabled={payingQuoteId === quote.id || initiatePaymentMutation.isPending}
                               >
-                                {acceptQuoteMutation.isPending ? 'Se procesează...' : 'Acceptă oferta'}
+                                {payingQuoteId === quote.id ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                    Se procesează...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CreditCard className="h-4 w-4 mr-1" />
+                                    Plătește {quote.price} Lei
+                                  </>
+                                )}
                               </Button>
                             )}
                           </div>
