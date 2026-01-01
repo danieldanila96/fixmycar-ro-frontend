@@ -24,6 +24,7 @@ import Terms from "./pages/Terms";
 import Messages from "./pages/Messages";
 import MyAppointments from "./pages/MyAppointments";
 import NotFound from "./pages/NotFound";
+import PaymentSuccess from "./pages/PaymentSuccess";
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -60,6 +61,7 @@ const App = () => (
             <Route path="/mesaje" element={<Messages />} />
             <Route path="/mesaje/:conversationId" element={<Messages />} />
             <Route path="/programari" element={<MyAppointments />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/utilizatori" element={<AdminUsers />} />

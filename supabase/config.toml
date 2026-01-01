@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.seed-test-users]
 verify_jwt = false
+
+[functions.create-booking-payment]
+verify_jwt = true
+
+[functions.verify-booking-payment]
+verify_jwt = true
