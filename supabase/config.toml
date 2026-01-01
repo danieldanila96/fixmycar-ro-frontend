@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.verify-booking-payment]
 verify_jwt = true
+
+[functions.send-itp-reminders]
+verify_jwt = false
