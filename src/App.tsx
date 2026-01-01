@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NotificationProvider } from "@/components/NotificationProvider";
+import CookieConsent from "@/components/CookieConsent";
 import Index from "./pages/Index";
 import RequestQuote from "./pages/RequestQuote";
 import Auth from "./pages/Auth";
@@ -21,6 +22,7 @@ import Profile from "./pages/Profile";
 import HowItWorks from "./pages/HowItWorks";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
+import CookiePolicy from "./pages/CookiePolicy";
 import Messages from "./pages/Messages";
 import MyAppointments from "./pages/MyAppointments";
 import NotFound from "./pages/NotFound";
@@ -58,6 +60,7 @@ const App = () => (
             <Route path="/cum-functioneaza" element={<HowItWorks />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/termeni" element={<Terms />} />
+            <Route path="/cookies" element={<CookiePolicy />} />
             <Route path="/mesaje" element={<Messages />} />
             <Route path="/mesaje/:conversationId" element={<Messages />} />
             <Route path="/programari" element={<MyAppointments />} />
@@ -70,6 +73,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <CookieConsent />
           </NotificationProvider>
         </BrowserRouter>
       </TooltipProvider>
