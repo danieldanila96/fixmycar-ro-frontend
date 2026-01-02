@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.send-kyc-notification]
 verify_jwt = true
+
+[functions.send-quote-notification]
+verify_jwt = true
