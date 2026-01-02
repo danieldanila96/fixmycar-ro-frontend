@@ -110,7 +110,7 @@ serve(async (req) => {
     // Create booking record
     const { data: quote } = await supabaseClient
       .from('quotes')
-      .select('garage_id')
+      .select('garage_id, price')
       .eq('id', quoteId)
       .single();
 
@@ -129,6 +129,45 @@ serve(async (req) => {
       // Don't throw here, payment was successful
     } else {
       logStep("Booking record created");
+    }
+
+    // Send booking confirmation emails (non-blocking)
+    if (quote) {
+      logStep("Sending booking confirmation emails");
+      
+      // Get job owner
+      const { data: jobData } = await supabaseClient
+        .from('jobs')
+        .select('user_id')
+        .eq('id', jobId)
+        .single();
+
+      if (jobData) {
+        // Call the send-booking-confirmation function
+        const response = await fetch(
+          `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-booking-confirmation`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            },
+            body: JSON.stringify({
+              jobId,
+              quoteId,
+              customerId: jobData.user_id,
+              garageId: quote.garage_id,
+              price: quote.price,
+            }),
+          }
+        );
+        
+        if (!response.ok) {
+          logStep("Booking confirmation email error", { status: response.status });
+        } else {
+          logStep("Booking confirmation emails sent");
+        }
+      }
     }
 
     return new Response(JSON.stringify({ 
