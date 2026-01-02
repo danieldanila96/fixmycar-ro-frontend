@@ -353,6 +353,48 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          email_appointment_reminders: boolean
+          email_booking_confirmation: boolean
+          email_itp_reminders: boolean
+          email_kyc_updates: boolean
+          email_messages: boolean
+          email_new_quotes: boolean
+          email_quote_accepted: boolean
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_appointment_reminders?: boolean
+          email_booking_confirmation?: boolean
+          email_itp_reminders?: boolean
+          email_kyc_updates?: boolean
+          email_messages?: boolean
+          email_new_quotes?: boolean
+          email_quote_accepted?: boolean
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_appointment_reminders?: boolean
+          email_booking_confirmation?: boolean
+          email_itp_reminders?: boolean
+          email_kyc_updates?: boolean
+          email_messages?: boolean
+          email_new_quotes?: boolean
+          email_quote_accepted?: boolean
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
