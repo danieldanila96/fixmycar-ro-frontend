@@ -127,7 +127,7 @@ const GarageJobDetails = () => {
 
       setErrors({});
 
-      const { error } = await supabase
+      const { data: newQuote, error } = await supabase
         .from('quotes')
         .insert({
           job_id: id,
@@ -135,7 +135,9 @@ const GarageJobDetails = () => {
           price: priceNum,
           message: message.trim() || null,
           estimated_days: daysNum || null,
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
 
@@ -145,6 +147,18 @@ const GarageJobDetails = () => {
         .update({ status: 'quotes_provided' })
         .eq('id', id)
         .eq('status', 'open');
+
+      // Send email notification to customer (non-blocking)
+      supabase.functions.invoke('send-quote-notification', {
+        body: {
+          quoteId: newQuote.id,
+          jobId: id,
+          garageId: user.id,
+          price: priceNum,
+          estimatedDays: daysNum,
+          message: message.trim() || undefined,
+        },
+      }).catch(err => console.error('Failed to send quote notification:', err));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-quote', id] });
