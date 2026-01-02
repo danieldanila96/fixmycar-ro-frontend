@@ -27,6 +27,7 @@ import Messages from "./pages/Messages";
 import MyAppointments from "./pages/MyAppointments";
 import NotFound from "./pages/NotFound";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import NotificationSettings from "./pages/NotificationSettings";
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -66,6 +67,7 @@ const App = () => (
             <Route path="/mesaje/:conversationId" element={<Messages />} />
             <Route path="/programari" element={<MyAppointments />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/notificari" element={<NotificationSettings />} />
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/kyc" element={<AdminKYC />} />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -19,7 +19,7 @@ import { GalleryUpload } from '@/components/GalleryUpload';
 import OperatingHoursEditor, { OperatingHours } from '@/components/OperatingHoursEditor';
 import { RARCategorySelector, RARCategoryBadges, RARCategory } from '@/components/RARCategoryBadges';
 import { KYCDocumentUpload } from '@/components/KYCDocumentUpload';
-import { User, Building2, Phone, MapPin, FileText, Star, Loader2, Wrench, Navigation, Shield } from 'lucide-react';
+import { User, Building2, Phone, MapPin, FileText, Star, Loader2, Wrench, Navigation, Shield, Bell } from 'lucide-react';
 
 const customerSchema = z.object({
   full_name: z.string().min(2, 'Numele trebuie să aibă cel puțin 2 caractere').max(100),
@@ -620,6 +620,24 @@ const Profile = () => {
                   </div>
                 )}
               </form>
+            </CardContent>
+          </Card>
+
+          {/* Notification Settings Link */}
+          <Card className="mt-6">
+            <CardContent className="pt-6">
+              <Link to="/notificari" className="flex items-center justify-between hover:bg-muted/50 -m-4 p-4 rounded-lg transition-colors">
+                <div className="flex items-center gap-3">
+                  <Bell className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Setări Notificări</p>
+                    <p className="text-sm text-muted-foreground">Gestionează preferințele de email</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm">
+                  Configurează
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
