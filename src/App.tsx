@@ -20,6 +20,7 @@ import SearchGarages from "./pages/SearchGarages";
 import ReviewPage from "./pages/ReviewPage";
 import Profile from "./pages/Profile";
 import HowItWorks from "./pages/HowItWorks";
+import ForGarages from "./pages/ForGarages";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import CookiePolicy from "./pages/CookiePolicy";
@@ -59,7 +60,8 @@ const App = () => (
             <Route path="/service/:garageId" element={<GaragePublicProfile />} />
             <Route path="/cauta-service" element={<SearchGarages />} />
             <Route path="/profil" element={<Profile />} />
-            <Route path="/cum-functioneaza" element={<HowItWorks />} />
+<Route path="/cum-functioneaza" element={<HowItWorks />} />
+            <Route path="/pentru-garaje" element={<ForGarages />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/termeni" element={<Terms />} />
             <Route path="/cookies" element={<CookiePolicy />} />
