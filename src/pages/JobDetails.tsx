@@ -239,6 +239,16 @@ const JobDetails = () => {
         .eq('id', id);
 
       if (error) throw error;
+
+      // Send job completion notification email
+      try {
+        await supabase.functions.invoke('send-job-completion', {
+          body: { jobId: id }
+        });
+      } catch (emailError) {
+        console.error('Failed to send job completion email:', emailError);
+        // Don't throw - the job was completed successfully
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job', id] });
