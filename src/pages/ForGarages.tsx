@@ -156,7 +156,7 @@ const ForGarages = () => {
                 <Button 
                   size="lg" 
                   className="group text-lg px-8"
-                  onClick={() => navigate("/autentificare?tip=garaj")}
+                  onClick={() => navigate("/inregistrare-service")}
                 >
                   Înregistrează-ți Service-ul
                   <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
@@ -348,7 +348,7 @@ const ForGarages = () => {
                 <Button 
                   size="lg" 
                   className="text-lg px-10"
-                  onClick={() => navigate("/autentificare?tip=garaj")}
+                  onClick={() => navigate("/inregistrare-service")}
                 >
                   Înregistrează-te acum
                   <ArrowRight className="w-5 h-5 ml-2" />
@@ -372,7 +372,7 @@ const ForGarages = () => {
               size="lg" 
               variant="secondary" 
               className="text-lg px-10"
-              onClick={() => navigate("/autentificare?tip=garaj")}
+              onClick={() => navigate("/inregistrare-service")}
             >
               Începe gratuit
               <ArrowRight className="w-5 h-5 ml-2" />

@@ -1,5 +1,6 @@
 import { Users, BarChart3, BadgeCheck, Zap, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const ForGaragesSection = () => {
   const benefits = [
@@ -24,6 +25,8 @@ const ForGaragesSection = () => {
       description: "Primește notificări imediate pentru cereri noi și nu pierzi nicio oportunitate.",
     },
   ];
+
+  const navigate = useNavigate();
 
   return (
     <section id="pentru-garaje" className="py-20 md:py-28 bg-muted/50">
@@ -58,7 +61,12 @@ const ForGaragesSection = () => {
               ))}
             </div>
 
-            <Button variant="default" size="lg" className="group">
+            <Button 
+              variant="default" 
+              size="lg" 
+              className="group"
+              onClick={() => navigate("/inregistrare-service")}
+            >
               Înregistrează-ți Service-ul
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Button>
