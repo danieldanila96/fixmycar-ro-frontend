@@ -29,6 +29,7 @@ import MyAppointments from "./pages/MyAppointments";
 import NotFound from "./pages/NotFound";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotificationSettings from "./pages/NotificationSettings";
+import GarageRegistration from "./pages/GarageRegistration";
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -62,6 +63,7 @@ const App = () => (
             <Route path="/profil" element={<Profile />} />
 <Route path="/cum-functioneaza" element={<HowItWorks />} />
             <Route path="/pentru-garaje" element={<ForGarages />} />
+            <Route path="/inregistrare-service" element={<GarageRegistration />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/termeni" element={<Terms />} />
             <Route path="/cookies" element={<CookiePolicy />} />
