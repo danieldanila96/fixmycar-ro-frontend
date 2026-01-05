@@ -6,6 +6,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import GarageMap from '@/components/GarageMap';
 import FavoriteButton from '@/components/FavoriteButton';
+import StarRating from '@/components/StarRating';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,7 +22,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Search, 
   MapPin, 
-  Star, 
   Building2, 
   Filter, 
   X,
@@ -181,17 +181,6 @@ const SearchGarages = () => {
   };
 
   const hasActiveFilters = searchQuery || selectedCounty || selectedCategory || showFavoritesOnly;
-
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`h-4 w-4 ${
-          i < Math.round(rating) ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'
-        }`}
-      />
-    ));
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -378,10 +367,7 @@ const SearchGarages = () => {
                           
                           {garage.average_rating && garage.average_rating > 0 ? (
                             <div className="flex items-center gap-1 mt-1">
-                              <div className="flex">{renderStars(garage.average_rating)}</div>
-                              <span className="text-sm font-medium ml-1">
-                                {garage.average_rating.toFixed(1)}
-                              </span>
+                              <StarRating rating={garage.average_rating} size="sm" showValue />
                               <span className="text-sm text-muted-foreground">
                                 ({garage.total_reviews})
                               </span>
