@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/admin/AdminLayout';
+import StarRating from '@/components/StarRating';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { Search, Trash2, Star, Loader2 } from 'lucide-react';
+import { Search, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ro } from 'date-fns/locale';
 
@@ -112,22 +113,6 @@ const AdminReviews = () => {
       : profile.full_name;
   };
 
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={`h-4 w-4 ${
-              star <= rating 
-                ? 'text-yellow-500 fill-yellow-500' 
-                : 'text-gray-300'
-            }`}
-          />
-        ))}
-      </div>
-    );
-  };
 
   const filteredReviews = reviews?.filter(review => {
     const matchesSearch = 
@@ -202,7 +187,7 @@ const AdminReviews = () => {
                     <TableCell>
                       {getProfileName(review.customer_id)}
                     </TableCell>
-                    <TableCell>{renderStars(review.rating)}</TableCell>
+                    <TableCell><StarRating rating={review.rating} size="sm" /></TableCell>
                     <TableCell>
                       <p className="text-sm text-muted-foreground line-clamp-2">
                         {review.comment || 'Fără comentariu'}
