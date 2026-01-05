@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,8 @@ const StarRating = ({
   showValue = false,
   className,
 }: StarRatingProps) => {
+  const [hoverRating, setHoverRating] = useState(0);
+
   const handleClick = (index: number) => {
     if (interactive && onChange) {
       onChange(index + 1);
@@ -39,11 +42,25 @@ const StarRating = ({
     }
   };
 
+  const handleMouseEnter = (index: number) => {
+    if (interactive) {
+      setHoverRating(index + 1);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (interactive) {
+      setHoverRating(0);
+    }
+  };
+
+  const displayRating = hoverRating || rating;
+
   return (
     <div className={cn("flex items-center gap-1", className)}>
       {Array.from({ length: maxRating }).map((_, index) => {
-        const filled = index < Math.floor(rating);
-        const halfFilled = !filled && index < rating && rating % 1 !== 0;
+        const filled = index < Math.floor(displayRating);
+        const halfFilled = !filled && index < displayRating && displayRating % 1 !== 0;
 
         return (
           <button
@@ -51,6 +68,8 @@ const StarRating = ({
             type="button"
             onClick={() => handleClick(index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
+            onMouseEnter={() => handleMouseEnter(index)}
+            onMouseLeave={handleMouseLeave}
             disabled={!interactive}
             className={cn(
               "relative transition-transform",
@@ -63,7 +82,8 @@ const StarRating = ({
             <Star
               className={cn(
                 sizeClasses[size],
-                "text-muted-foreground/30"
+                "text-muted-foreground/30",
+                interactive && hoverRating > 0 && index >= hoverRating && "text-muted-foreground/20"
               )}
             />
             {/* Filled star (overlay) */}
@@ -80,9 +100,12 @@ const StarRating = ({
           </button>
         );
       })}
-      {showValue && (
-        <span className="ml-1 text-sm font-medium text-muted-foreground">
-          {rating.toFixed(1)}
+      {(showValue || (interactive && hoverRating > 0)) && (
+        <span className={cn(
+          "ml-1 text-sm font-medium transition-colors",
+          hoverRating > 0 ? "text-foreground" : "text-muted-foreground"
+        )}>
+          {displayRating.toFixed(1)}
         </span>
       )}
     </div>
