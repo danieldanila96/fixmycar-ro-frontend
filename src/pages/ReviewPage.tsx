@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Star, CheckCircle, Car } from 'lucide-react';
+import StarRating from '@/components/StarRating';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -46,7 +47,6 @@ const ReviewPage = () => {
   const queryClient = useQueryClient();
 
   const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -230,17 +230,8 @@ const ReviewPage = () => {
                 <p className="text-muted-foreground mb-6">
                   Recenzia ta ajută alți clienți să găsească service-uri de încredere.
                 </p>
-                <div className="flex justify-center gap-2 mb-6">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`h-8 w-8 ${
-                        star <= (existingReview?.rating || rating)
-                          ? 'fill-amber-400 text-amber-400'
-                          : 'text-muted-foreground'
-                      }`}
-                    />
-                  ))}
+                <div className="flex justify-center mb-6">
+                  <StarRating rating={existingReview?.rating || rating} size="lg" className="gap-2" />
                 </div>
                 {(existingReview?.comment || comment) && (
                   <p className="text-sm text-muted-foreground italic mb-6">
@@ -299,25 +290,14 @@ const ReviewPage = () => {
               {/* Star Rating */}
               <div className="space-y-3">
                 <Label className="text-base">Cum evaluezi serviciul primit? *</Label>
-                <div className="flex justify-center gap-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setRating(star)}
-                      onMouseEnter={() => setHoverRating(star)}
-                      onMouseLeave={() => setHoverRating(0)}
-                      className="p-1 transition-transform hover:scale-110"
-                    >
-                      <Star
-                        className={`h-10 w-10 transition-colors ${
-                          star <= (hoverRating || rating)
-                            ? 'fill-amber-400 text-amber-400'
-                            : 'text-muted-foreground hover:text-amber-300'
-                        }`}
-                      />
-                    </button>
-                  ))}
+                <div className="flex justify-center">
+                  <StarRating
+                    rating={rating}
+                    size="lg"
+                    interactive
+                    onChange={setRating}
+                    className="gap-2"
+                  />
                 </div>
                 <p className="text-center text-sm text-muted-foreground">
                   {rating === 0 && 'Selectează un rating'}
