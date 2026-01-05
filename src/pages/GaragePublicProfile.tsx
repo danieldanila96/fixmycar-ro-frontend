@@ -5,11 +5,11 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import FavoriteButton from '@/components/FavoriteButton';
 import AppointmentBooking from '@/components/AppointmentBooking';
+import StarRating from '@/components/StarRating';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
-  Star, 
   MapPin, 
   Phone, 
   Building2, 
@@ -149,16 +149,6 @@ const GaragePublicProfile = () => {
     );
   }
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`h-4 w-4 ${
-          i < rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'
-        }`}
-      />
-    ));
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -210,8 +200,7 @@ const GaragePublicProfile = () => {
                       
                       {garage.average_rating !== null && garage.average_rating > 0 && (
                         <div className="flex items-center gap-2 mb-3">
-                          <div className="flex">{renderStars(Math.round(garage.average_rating))}</div>
-                          <span className="font-semibold">{garage.average_rating.toFixed(1)}</span>
+                          <StarRating rating={garage.average_rating} showValue />
                           <span className="text-muted-foreground">
                             ({garage.total_reviews} {garage.total_reviews === 1 ? 'recenzie' : 'recenzii'})
                           </span>
@@ -332,7 +321,7 @@ const GaragePublicProfile = () => {
                               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                                 <User className="h-4 w-4 text-muted-foreground" />
                               </div>
-                              <div className="flex">{renderStars(review.rating)}</div>
+                              <StarRating rating={review.rating} size="sm" />
                             </div>
                             <span className="text-sm text-muted-foreground">
                               {format(new Date(review.created_at), 'd MMM yyyy', { locale: ro })}
