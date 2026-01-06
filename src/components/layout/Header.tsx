@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Car, User, LogOut, Wrench, MessageSquare, CalendarDays } from "lucide-react";
+import { Menu, X, Car, User, LogOut, Wrench, MessageSquare, CalendarDays, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
@@ -123,6 +123,10 @@ const Header = () => {
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </Badge>
                   )}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/notificari')}>
+                  <Bell className="mr-2 h-4 w-4" />
+                  Setări notificări
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">

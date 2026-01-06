@@ -29,13 +29,17 @@ export const VINInput = ({
   const validateVIN = (value: string) => {
     if (!value) {
       setVinValid(null);
+      onVINChange('');
       return;
     }
     
+    // Remove invalid characters (I, O, Q are not allowed in VINs)
     const cleanVin = value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
-    const isValid = cleanVin.length === 17;
-    setVinValid(isValid);
-    onVINChange(cleanVin);
+    // Enforce max 17 characters
+    const truncatedVin = cleanVin.slice(0, 17);
+    const isValid = truncatedVin.length === 17;
+    setVinValid(truncatedVin.length > 0 ? isValid : null);
+    onVINChange(truncatedVin);
   };
 
   const formatCIV = (value: string) => {
