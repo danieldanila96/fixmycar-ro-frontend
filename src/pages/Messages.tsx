@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Send, Loader2, MessageSquare, Car } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, MessageSquare, Car, Check, CheckCheck, AlertCircle, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ro } from 'date-fns/locale';
 
@@ -21,6 +21,13 @@ interface Message {
   content: string;
   is_read: boolean;
   created_at: string;
+}
+
+interface PendingMessage {
+  id: string;
+  content: string;
+  status: 'sending' | 'sent' | 'failed';
+  timestamp: Date;
 }
 
 interface Conversation {
@@ -43,7 +50,9 @@ const Messages = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
+  const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -86,6 +95,7 @@ const Messages = () => {
       return data as Message[];
     },
     enabled: !!conversationId,
+    refetchInterval: 5000, // Poll every 5 seconds as backup
   });
 
   // Get selected conversation details
@@ -112,40 +122,78 @@ const Messages = () => {
     enabled: !!selectedConversation && !!user,
   });
 
-  // Send message mutation
-  const sendMutation = useMutation({
-    mutationFn: async (content: string) => {
-      if (!user || !conversationId) throw new Error('Nu ești autentificat');
-      
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: conversationId,
-          sender_id: user.id,
-          content: content.trim(),
-        });
-      
-      if (error) throw error;
+  // Send message mutation with optimistic updates
+  const sendMessage = useCallback(async (content: string, tempId: string) => {
+    if (!user || !conversationId) throw new Error('Nu ești autentificat');
+    
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({
+        conversation_id: conversationId,
+        sender_id: user.id,
+        content: content.trim(),
+      })
+      .select('id')
+      .single();
+    
+    if (error) throw error;
 
-      // Update conversation updated_at
-      await supabase
-        .from('conversations')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', conversationId);
-    },
-    onSuccess: () => {
-      setNewMessage('');
-      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
-    },
-    onError: (error) => {
+    // Update conversation updated_at
+    await supabase
+      .from('conversations')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', conversationId);
+
+    return data.id;
+  }, [user, conversationId]);
+
+  const handleSendMessage = useCallback(async (content: string) => {
+    if (!content.trim() || !conversationId) return;
+    
+    const tempId = `temp-${Date.now()}`;
+    
+    // Add to pending messages (optimistic)
+    setPendingMessages(prev => [...prev, {
+      id: tempId,
+      content: content.trim(),
+      status: 'sending',
+      timestamp: new Date(),
+    }]);
+    setNewMessage('');
+    
+    try {
+      await sendMessage(content, tempId);
+      
+      // Mark as sent
+      setPendingMessages(prev => 
+        prev.map(m => m.id === tempId ? { ...m, status: 'sent' as const } : m)
+      );
+      
+      // Remove from pending after real message appears
+      setTimeout(() => {
+        setPendingMessages(prev => prev.filter(m => m.id !== tempId));
+        queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      }, 500);
+      
+    } catch (error) {
+      // Mark as failed
+      setPendingMessages(prev => 
+        prev.map(m => m.id === tempId ? { ...m, status: 'failed' as const } : m)
+      );
       toast({
         title: 'Eroare',
-        description: error instanceof Error ? error.message : 'Nu am putut trimite mesajul.',
+        description: 'Nu am putut trimite mesajul. Încearcă din nou.',
         variant: 'destructive',
       });
-    },
-  });
+    }
+  }, [conversationId, sendMessage, queryClient, toast]);
+
+  const retryMessage = useCallback((pendingMsg: PendingMessage) => {
+    // Remove failed message and resend
+    setPendingMessages(prev => prev.filter(m => m.id !== pendingMsg.id));
+    handleSendMessage(pendingMsg.content);
+  }, [handleSendMessage]);
 
   // Real-time subscription for new messages
   useEffect(() => {
@@ -198,9 +246,17 @@ const Messages = () => {
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
-    sendMutation.mutate(newMessage);
+    handleSendMessage(newMessage);
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(newMessage);
+    }
+  };
+
+  const isSending = pendingMessages.some(m => m.status === 'sending');
 
   const getParticipantName = (conv: Conversation) => {
     if (!user) return '';
@@ -320,27 +376,70 @@ const Messages = () => {
                                   }`}
                                 >
                                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                                  <p className={`text-xs mt-1 ${isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                                    {format(new Date(msg.created_at), 'HH:mm', { locale: ro })}
-                                  </p>
+                                  <div className={`flex items-center gap-1 mt-1 ${isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                                    <span className="text-xs">
+                                      {format(new Date(msg.created_at), 'HH:mm', { locale: ro })}
+                                    </span>
+                                    {isOwn && msg.is_read && (
+                                      <CheckCheck className="h-3 w-3" />
+                                    )}
+                                    {isOwn && !msg.is_read && (
+                                      <Check className="h-3 w-3" />
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             );
                           })}
+                          
+                          {/* Pending messages with status */}
+                          {pendingMessages.map((pendingMsg) => (
+                            <div key={pendingMsg.id} className="flex justify-end">
+                              <div className={`max-w-[75%] rounded-2xl px-4 py-2 rounded-br-md ${
+                                pendingMsg.status === 'failed' 
+                                  ? 'bg-destructive/20 border border-destructive/50' 
+                                  : 'bg-primary/80 text-primary-foreground'
+                              }`}>
+                                <p className="text-sm whitespace-pre-wrap">{pendingMsg.content}</p>
+                                <div className="flex items-center gap-1 mt-1 text-xs">
+                                  {pendingMsg.status === 'sending' && (
+                                    <>
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                      <span className="text-primary-foreground/70">Se trimite...</span>
+                                    </>
+                                  )}
+                                  {pendingMsg.status === 'failed' && (
+                                    <button
+                                      onClick={() => retryMessage(pendingMsg)}
+                                      className="flex items-center gap-1 text-destructive hover:underline"
+                                    >
+                                      <AlertCircle className="h-3 w-3" />
+                                      <span>Eșuat</span>
+                                      <RotateCcw className="h-3 w-3 ml-1" />
+                                      <span>Reîncearcă</span>
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          
                           <div ref={messagesEndRef} />
                         </div>
                       )}
                     </ScrollArea>
                     <form onSubmit={handleSend} className="p-4 border-t flex gap-2">
                       <Input
+                        ref={inputRef}
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Scrie un mesaj..."
+                        onKeyDown={handleKeyDown}
+                        placeholder="Scrie un mesaj... (Enter pentru a trimite)"
                         className="flex-1"
-                        disabled={sendMutation.isPending}
+                        disabled={isSending}
                       />
-                      <Button type="submit" disabled={sendMutation.isPending || !newMessage.trim()}>
-                        {sendMutation.isPending ? (
+                      <Button type="submit" disabled={isSending || !newMessage.trim()}>
+                        {isSending ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <Send className="h-4 w-4" />

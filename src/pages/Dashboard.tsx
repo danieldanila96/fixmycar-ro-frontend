@@ -58,10 +58,13 @@ const Dashboard = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      
+      // Return empty array early if no jobs
+      if (!jobsData || jobsData.length === 0) return [];
 
       // Get quotes count for each job
       const jobsWithQuotes = await Promise.all(
-        (jobsData || []).map(async (job) => {
+        jobsData.map(async (job) => {
           const { count } = await supabase
             .from('quotes')
             .select('*', { count: 'exact', head: true })
@@ -74,6 +77,7 @@ const Dashboard = () => {
       return jobsWithQuotes as Job[];
     },
     enabled: !!user,
+    staleTime: 30000, // Keep data fresh for 30 seconds
   });
 
   const activeJobs = jobs?.filter(j => ['open', 'quotes_provided', 'booked'].includes(j.status)) || [];
@@ -188,27 +192,33 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <Card>
               <CardContent className="pt-6">
-                <div className="text-2xl font-bold text-foreground">{jobs?.length || 0}</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {jobsLoading ? <span className="animate-pulse">--</span> : (jobs?.length || 0)}
+                </div>
                 <p className="text-sm text-muted-foreground">Total cereri</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
-                <div className="text-2xl font-bold text-primary">{activeJobs.length}</div>
+                <div className="text-2xl font-bold text-primary">
+                  {jobsLoading ? <span className="animate-pulse">--</span> : activeJobs.length}
+                </div>
                 <p className="text-sm text-muted-foreground">Active</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
                 <div className="text-2xl font-bold text-accent">
-                  {jobs?.reduce((acc, j) => acc + (j.quotes_count || 0), 0) || 0}
+                  {jobsLoading ? <span className="animate-pulse">--</span> : (jobs?.reduce((acc, j) => acc + (j.quotes_count || 0), 0) || 0)}
                 </div>
                 <p className="text-sm text-muted-foreground">Oferte primite</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
-                <div className="text-2xl font-bold text-green-600">{completedJobs.filter(j => j.status === 'completed').length}</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {jobsLoading ? <span className="animate-pulse">--</span> : completedJobs.filter(j => j.status === 'completed').length}
+                </div>
                 <p className="text-sm text-muted-foreground">Finalizate</p>
               </CardContent>
             </Card>
