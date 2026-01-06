@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Car, MapPin, Clock, Calendar, MessageSquare, CheckCircle, Send, CalendarDays } from 'lucide-react';
+import { Car, MapPin, Clock, Calendar, MessageSquare, CheckCircle, Send, CalendarDays, Shield } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import JobFilters, { JobFiltersState } from '@/components/JobFilters';
 import GarageAppointments from '@/components/GarageAppointments';
+import KYCDocumentUpload from '@/components/KYCDocumentUpload';
 
 interface Job {
   id: string;
@@ -129,6 +130,21 @@ const GarageDashboard = () => {
       );
 
       return quotesWithJobs as Quote[];
+    },
+    enabled: !!user,
+  });
+
+  // Fetch KYC documents
+  const { data: kycDocuments, refetch: refetchKycDocs } = useQuery({
+    queryKey: ['kyc-documents', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('garage_documents')
+        .select('*')
+        .eq('garage_id', user.id);
+      if (error) throw error;
+      return data || [];
     },
     enabled: !!user,
   });
@@ -383,7 +399,7 @@ const GarageDashboard = () => {
 
           {/* Main Tabs */}
           <Tabs defaultValue="available" className="w-full">
-            <TabsList className="mb-6">
+            <TabsList className="mb-6 flex-wrap">
               <TabsTrigger value="available">
                 Cereri disponibile ({availableJobs?.length || 0})
               </TabsTrigger>
@@ -393,6 +409,10 @@ const GarageDashboard = () => {
               <TabsTrigger value="appointments" className="flex items-center gap-1">
                 <CalendarDays className="h-4 w-4" />
                 Programări
+              </TabsTrigger>
+              <TabsTrigger value="kyc" className="flex items-center gap-1">
+                <Shield className="h-4 w-4" />
+                Verificare KYC
               </TabsTrigger>
             </TabsList>
 
@@ -497,6 +517,19 @@ const GarageDashboard = () => {
 
             <TabsContent value="appointments">
               <GarageAppointments />
+            </TabsContent>
+
+            <TabsContent value="kyc">
+              <KYCDocumentUpload 
+                existingDocuments={kycDocuments?.map(doc => ({
+                  document_type: doc.document_type,
+                  file_url: doc.file_url,
+                  file_name: doc.file_name,
+                  status: doc.status || 'pending'
+                })) || []}
+                onDocumentsChange={refetchKycDocs}
+                kycStatus={profile?.kyc_status || 'pending'}
+              />
             </TabsContent>
           </Tabs>
         </div>
