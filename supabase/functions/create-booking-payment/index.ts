@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const logStep = (step: string, details?: any) => {
+const logStep = (step: string, details?: Record<string, unknown>) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-BOOKING-PAYMENT] ${step}${detailsStr}`);
 };
@@ -25,29 +25,53 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
-
   try {
     logStep("Function started");
 
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error("Missing Supabase configuration");
+    }
+    if (!stripeKey) {
+      throw new Error("STRIPE_SECRET_KEY is not configured");
+    }
+    if (!serviceRoleKey) {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured");
+    }
+
+    // Auth client to verify user
+    const authClient = createClient(supabaseUrl, supabaseAnonKey);
+    
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader) {
+      throw new Error("No authorization header provided");
+    }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    const { data: userData, error: userError } = await authClient.auth.getUser(token);
+    
+    if (userError) {
+      logStep("Auth error", { error: userError.message });
+      throw new Error(`Authentication error: ${userError.message}`);
+    }
     
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user?.email) {
+      throw new Error("User not authenticated or email not available");
+    }
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { quoteId, jobId, amount, garageName, jobDescription }: PaymentRequest = await req.json();
+    // Service role client for database queries (bypasses RLS)
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    });
+
+    const body = await req.json();
+    const { quoteId, jobId, amount, garageName, jobDescription }: PaymentRequest = body;
     logStep("Payment request received", { quoteId, jobId, amount, garageName });
 
     if (!quoteId || !jobId || !amount) {
@@ -55,22 +79,45 @@ serve(async (req) => {
     }
 
     // Verify the quote exists and belongs to this job
-    const { data: quote, error: quoteError } = await supabaseClient
+    const { data: quote, error: quoteError } = await supabaseAdmin
       .from('quotes')
-      .select('id, price, garage_id, status')
+      .select('id, price, garage_id, status, job_id')
       .eq('id', quoteId)
-      .eq('job_id', jobId)
       .single();
 
-    if (quoteError || !quote) {
-      throw new Error("Quote not found or does not match job");
+    if (quoteError) {
+      logStep("Quote query error", { error: quoteError.message });
+      throw new Error("Quote not found");
+    }
+
+    if (!quote) {
+      throw new Error("Quote not found");
+    }
+
+    if (quote.job_id !== jobId) {
+      throw new Error("Quote does not match job");
+    }
+
+    // Verify the job belongs to this user
+    const { data: job, error: jobError } = await supabaseAdmin
+      .from('jobs')
+      .select('id, user_id')
+      .eq('id', jobId)
+      .single();
+
+    if (jobError || !job) {
+      throw new Error("Job not found");
+    }
+
+    if (job.user_id !== user.id) {
+      throw new Error("You don't have permission to pay for this job");
     }
 
     if (quote.status !== 'sent') {
       throw new Error("Quote has already been processed");
     }
 
-    logStep("Quote verified", { quotePrice: quote.price });
+    logStep("Quote and job verified", { quotePrice: quote.price, garageId: quote.garage_id });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
