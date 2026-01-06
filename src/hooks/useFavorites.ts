@@ -35,6 +35,7 @@ export const useFavorites = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['favorites', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['user-favorites-list'] });
       toast.success('Adăugat la favorite');
     },
     onError: () => {
@@ -56,6 +57,7 @@ export const useFavorites = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['favorites', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['user-favorites-list'] });
       toast.success('Eliminat din favorite');
     },
     onError: () => {
