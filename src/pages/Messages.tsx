@@ -291,11 +291,13 @@ const Messages = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-1 p-0">
-                <ScrollArea className="h-full">
+              <ScrollArea className="h-full">
                   {conversations?.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8 px-4">
-                      Nu ai conversații încă.
-                    </p>
+                    <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                      <MessageSquare className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+                      <p className="text-sm text-muted-foreground mb-4">Nu ai conversații încă.</p>
+                      <p className="text-xs text-muted-foreground">Conversațiile vor apărea aici când trimiți sau primești mesaje de la service-uri.</p>
+                    </div>
                   ) : (
                     <div className="space-y-1 p-2">
                       {conversations?.map((conv) => (
@@ -356,9 +358,11 @@ const Messages = () => {
                           <Loader2 className="h-6 w-6 animate-spin text-primary" />
                         </div>
                       ) : messages?.length === 0 ? (
-                        <p className="text-center text-muted-foreground py-8">
-                          Niciun mesaj încă. Trimite primul mesaj!
-                        </p>
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                          <MessageSquare className="h-10 w-10 text-muted-foreground mb-3 opacity-50" />
+                          <p className="text-muted-foreground mb-2">Niciun mesaj încă</p>
+                          <p className="text-xs text-muted-foreground">Trimite primul mesaj pentru a începe conversația!</p>
+                        </div>
                       ) : (
                         <div className="space-y-3">
                           {messages?.map((msg) => {
