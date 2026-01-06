@@ -10,8 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Car, Calendar, Trash2, Bell, AlertTriangle, CheckCircle } from 'lucide-react';
-import { format, differenceInDays, parseISO } from 'date-fns';
+import { Plus, Car, Calendar, Trash2, Bell, AlertTriangle, CheckCircle, Pencil } from 'lucide-react';
+import { format, differenceInDays } from 'date-fns';
 import { ro } from 'date-fns/locale';
 
 interface ITPReminder {
@@ -28,18 +28,29 @@ interface ITPReminder {
   created_at: string;
 }
 
+interface FormData {
+  vin: string;
+  civ: string;
+  car_make: string;
+  car_model: string;
+  itp_expiry_date: string;
+}
+
+const emptyFormData: FormData = {
+  vin: '',
+  civ: '',
+  car_make: '',
+  car_model: '',
+  itp_expiry_date: '',
+};
+
 const ITPRemindersManager = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    vin: '',
-    civ: '',
-    car_make: '',
-    car_model: '',
-    itp_expiry_date: '',
-  });
+  const [editingReminder, setEditingReminder] = useState<ITPReminder | null>(null);
+  const [formData, setFormData] = useState<FormData>(emptyFormData);
 
   const { data: reminders = [], isLoading } = useQuery({
     queryKey: ['itp-reminders', user?.id],
@@ -58,17 +69,17 @@ const ITPRemindersManager = () => {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
+    mutationFn: async (data: FormData) => {
       if (!user) throw new Error('Nu ești autentificat');
       
       const { error } = await supabase
         .from('itp_reminders')
         .insert({
           user_id: user.id,
-          vin: data.vin,
-          civ: data.civ || null,
-          car_make: data.car_make || null,
-          car_model: data.car_model || null,
+          vin: data.vin.trim(),
+          civ: data.civ.trim() || null,
+          car_make: data.car_make.trim() || null,
+          car_model: data.car_model.trim() || null,
           itp_expiry_date: data.itp_expiry_date,
         });
       
@@ -76,17 +87,51 @@ const ITPRemindersManager = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['itp-reminders'] });
-      setIsDialogOpen(false);
-      setFormData({ vin: '', civ: '', car_make: '', car_model: '', itp_expiry_date: '' });
+      closeDialog();
       toast({
         title: 'Memento adăugat',
         description: 'Vei primi notificări înainte de expirarea ITP-ului.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Eroare',
         description: error.message || 'Nu s-a putut adăuga memento-ul.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: FormData }) => {
+      if (!user) throw new Error('Nu ești autentificat');
+      
+      const { error } = await supabase
+        .from('itp_reminders')
+        .update({
+          vin: data.vin.trim(),
+          civ: data.civ.trim() || null,
+          car_make: data.car_make.trim() || null,
+          car_model: data.car_model.trim() || null,
+          itp_expiry_date: data.itp_expiry_date,
+        })
+        .eq('id', id)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['itp-reminders'] });
+      closeDialog();
+      toast({
+        title: 'Memento actualizat',
+        description: 'Modificările au fost salvate cu succes.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Eroare',
+        description: error.message || 'Nu s-a putut actualiza memento-ul.',
         variant: 'destructive',
       });
     },
@@ -117,9 +162,34 @@ const ITPRemindersManager = () => {
     },
   });
 
+  const openAddDialog = () => {
+    setEditingReminder(null);
+    setFormData(emptyFormData);
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = (reminder: ITPReminder) => {
+    setEditingReminder(reminder);
+    setFormData({
+      vin: reminder.vin,
+      civ: reminder.civ || '',
+      car_make: reminder.car_make || '',
+      car_model: reminder.car_model || '',
+      itp_expiry_date: reminder.itp_expiry_date,
+    });
+    setIsDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setEditingReminder(null);
+    setFormData(emptyFormData);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.vin || !formData.itp_expiry_date) {
+    
+    if (!formData.vin.trim() || !formData.itp_expiry_date) {
       toast({
         title: 'Date incomplete',
         description: 'VIN-ul și data expirării sunt obligatorii.',
@@ -127,14 +197,36 @@ const ITPRemindersManager = () => {
       });
       return;
     }
-    createMutation.mutate(formData);
+
+    if (formData.vin.trim().length !== 17) {
+      toast({
+        title: 'VIN invalid',
+        description: 'VIN-ul trebuie să aibă exact 17 caractere.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (editingReminder) {
+      updateMutation.mutate({ id: editingReminder.id, data: formData });
+    } else {
+      createMutation.mutate(formData);
+    }
   };
 
   const getExpiryStatus = (expiryDate: string) => {
-    const days = differenceInDays(parseISO(expiryDate), new Date());
+    // Parse the date as local date (YYYY-MM-DD format from database)
+    const [year, month, day] = expiryDate.split('-').map(Number);
+    const expiry = new Date(year, month - 1, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const days = differenceInDays(expiry, today);
     
     if (days < 0) {
       return { label: 'Expirat', variant: 'destructive' as const, icon: AlertTriangle, urgent: true };
+    } else if (days === 0) {
+      return { label: 'Expiră azi', variant: 'destructive' as const, icon: AlertTriangle, urgent: true };
     } else if (days <= 7) {
       return { label: `${days} zile`, variant: 'destructive' as const, icon: AlertTriangle, urgent: true };
     } else if (days <= 30) {
@@ -143,6 +235,15 @@ const ITPRemindersManager = () => {
       return { label: `${days} zile`, variant: 'outline' as const, icon: CheckCircle, urgent: false };
     }
   };
+
+  const formatExpiryDate = (dateStr: string) => {
+    // Parse as local date to avoid timezone issues
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    return format(date, 'd MMM yyyy', { locale: ro });
+  };
+
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Card>
@@ -157,16 +258,21 @@ const ITPRemindersManager = () => {
               Primește notificări înainte de expirarea ITP-ului vehiculelor tale
             </CardDescription>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            if (!open) closeDialog();
+            else setIsDialogOpen(true);
+          }}>
             <DialogTrigger asChild>
-              <Button size="sm">
+              <Button size="sm" onClick={openAddDialog}>
                 <Plus className="h-4 w-4 mr-2" />
                 Adaugă
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Adaugă memento ITP</DialogTitle>
+                <DialogTitle>
+                  {editingReminder ? 'Editează memento ITP' : 'Adaugă memento ITP'}
+                </DialogTitle>
                 <DialogDescription>
                   Vei primi notificări cu 30, 7 și 1 zi înainte de expirare.
                 </DialogDescription>
@@ -203,6 +309,9 @@ const ITPRemindersManager = () => {
                     maxLength={17}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    {formData.vin.length}/17 caractere
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -227,11 +336,11 @@ const ITPRemindersManager = () => {
                 </div>
 
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  <Button type="button" variant="outline" onClick={closeDialog}>
                     Anulează
                   </Button>
-                  <Button type="submit" disabled={createMutation.isPending}>
-                    {createMutation.isPending ? 'Se salvează...' : 'Salvează'}
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Se salvează...' : (editingReminder ? 'Salvează modificările' : 'Adaugă memento')}
                   </Button>
                 </DialogFooter>
               </form>
@@ -252,7 +361,7 @@ const ITPRemindersManager = () => {
             <p className="text-sm text-muted-foreground mb-4">
               Nu ai niciun memento ITP configurat.
             </p>
-            <Button variant="outline" size="sm" onClick={() => setIsDialogOpen(true)}>
+            <Button variant="outline" size="sm" onClick={openAddDialog}>
               <Plus className="h-4 w-4 mr-2" />
               Adaugă primul vehicul
             </Button>
@@ -280,7 +389,7 @@ const ITPRemindersManager = () => {
                     <div>
                       <p className="font-medium text-sm">{carName}</p>
                       <p className="text-xs text-muted-foreground">
-                        VIN: {reminder.vin.slice(-6)}... • Expiră: {format(parseISO(reminder.itp_expiry_date), 'd MMM yyyy', { locale: ro })}
+                        VIN: ...{reminder.vin.slice(-6)} • Expiră: {formatExpiryDate(reminder.itp_expiry_date)}
                       </p>
                     </div>
                   </div>
@@ -289,9 +398,23 @@ const ITPRemindersManager = () => {
                       <StatusIcon className="h-3 w-3" />
                       {status.label}
                     </Badge>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 text-muted-foreground hover:text-primary"
+                      onClick={() => openEditDialog(reminder)}
+                      aria-label="Editează memento"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          aria-label="Șterge memento"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
