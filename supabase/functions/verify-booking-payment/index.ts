@@ -53,7 +53,7 @@ serve(async (req) => {
       throw new Error("Missing required fields");
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-12-18.acacia" });
 
     // Retrieve the checkout session
     const session = await stripe.checkout.sessions.retrieve(sessionId);
