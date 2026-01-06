@@ -63,10 +63,10 @@ const HeroSection = () => {
           </div>
 
           {/* Trust Features */}
-          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 animate-fade-up animation-delay-400">
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 animate-fade-up animation-delay-400" role="list" aria-label="Beneficii platformă">
             {features.map((feature) => (
-              <div key={feature.text} className="flex items-center gap-2.5 text-primary-foreground/80">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-foreground/10 backdrop-blur-sm">
+              <div key={feature.text} className="flex items-center gap-2.5 text-primary-foreground/80" role="listitem">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-foreground/10 backdrop-blur-sm" aria-hidden="true">
                   <feature.icon className="w-4 h-4 text-accent" />
                 </div>
                 <span className="text-sm font-medium">{feature.text}</span>
