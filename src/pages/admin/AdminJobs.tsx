@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/admin/AdminLayout';
+import AdminJobDetailModal from '@/components/admin/AdminJobDetailModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,7 +36,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Search, Trash2, Eye, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ro } from 'date-fns/locale';
-import { Link } from 'react-router-dom';
 
 const AdminJobs = () => {
   const { toast } = useToast();
@@ -43,6 +43,7 @@ const AdminJobs = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [deleteJobId, setDeleteJobId] = useState<string | null>(null);
+  const [viewJobId, setViewJobId] = useState<string | null>(null);
 
   // Fetch all jobs
   const { data: jobs, isLoading } = useQuery({
@@ -185,11 +186,13 @@ const AdminJobs = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Link to={`/cereri/${job.id}`}>
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </Link>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => setViewJobId(job.id)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Button 
                           size="sm" 
                           variant="destructive"
@@ -213,6 +216,13 @@ const AdminJobs = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Admin Job Detail Modal */}
+      <AdminJobDetailModal
+        jobId={viewJobId}
+        open={!!viewJobId}
+        onOpenChange={(open) => !open && setViewJobId(null)}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteJobId} onOpenChange={() => setDeleteJobId(null)}>
