@@ -8,49 +8,58 @@
   :root {
     /* Deep Navy - Trust & Professionalism */
     --background: 210 20% 98%;
-    --foreground: 220 30% 15%;
+    --foreground: 220 30% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 30% 15%;
+    --card-foreground: 220 30% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 15%;
+    --popover-foreground: 220 30% 12%;
 
     /* Deep Navy Primary */
     --primary: 220 60% 25%;
     --primary-foreground: 0 0% 100%;
 
     /* Light Gray Secondary */
-    --secondary: 210 20% 95%;
-    --secondary-foreground: 220 30% 25%;
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 220 30% 18%;
 
+    /* Improved muted contrast */
     --muted: 210 15% 92%;
-    --muted-foreground: 220 15% 45%;
+    --muted-foreground: 220 15% 38%;
 
-    /* Warm Amber Accent */
-    --accent: 35 95% 55%;
-    --accent-foreground: 220 60% 15%;
+    /* Warm Amber Accent - with high contrast foreground */
+    --accent: 35 95% 50%;
+    --accent-foreground: 220 60% 12%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 20% 88%;
-    --input: 210 20% 88%;
+    --border: 210 20% 85%;
+    --input: 210 20% 85%;
     --ring: 220 60% 35%;
 
     --radius: 0.75rem;
 
     /* Custom Colors */
-    --amber: 35 95% 55%;
-    --amber-light: 40 95% 65%;
-    --amber-dark: 30 90% 45%;
+    --amber: 35 95% 50%;
+    --amber-light: 40 95% 60%;
+    --amber-dark: 30 90% 40%;
     --navy: 220 60% 25%;
     --navy-light: 220 50% 35%;
     --navy-dark: 220 70% 15%;
 
+    /* Success/Info colors for badges */
+    --success: 142 70% 35%;
+    --success-foreground: 0 0% 100%;
+    --info: 200 80% 40%;
+    --info-foreground: 0 0% 100%;
+    --warning: 38 92% 45%;
+    --warning-foreground: 0 0% 100%;
+
     /* Gradients */
     --gradient-hero: linear-gradient(135deg, hsl(220 60% 25%) 0%, hsl(220 50% 35%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(35 95% 55%) 0%, hsl(40 95% 65%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(35 95% 50%) 0%, hsl(40 95% 60%) 100%);
     --gradient-subtle: linear-gradient(180deg, hsl(210 20% 98%) 0%, hsl(210 15% 94%) 100%);
 
     /* Shadows */
@@ -58,54 +67,62 @@
     --shadow-md: 0 4px 6px -1px hsl(220 30% 15% / 0.08), 0 2px 4px -1px hsl(220 30% 15% / 0.04);
     --shadow-lg: 0 10px 15px -3px hsl(220 30% 15% / 0.1), 0 4px 6px -2px hsl(220 30% 15% / 0.05);
     --shadow-xl: 0 20px 25px -5px hsl(220 30% 15% / 0.12), 0 10px 10px -5px hsl(220 30% 15% / 0.04);
-    --shadow-glow: 0 0 40px hsl(35 95% 55% / 0.3);
+    --shadow-glow: 0 0 40px hsl(35 95% 50% / 0.3);
 
     /* Sidebar */
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-foreground: 220 30% 18%;
+    --sidebar-primary: 220 60% 25%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 94%;
+    --sidebar-accent-foreground: 220 30% 18%;
+    --sidebar-border: 210 20% 88%;
+    --sidebar-ring: 220 60% 35%;
   }
 
   .dark {
-    --background: 220 30% 8%;
-    --foreground: 210 20% 95%;
+    --background: 220 30% 7%;
+    --foreground: 210 20% 92%;
 
-    --card: 220 25% 12%;
-    --card-foreground: 210 20% 95%;
+    --card: 220 25% 11%;
+    --card-foreground: 210 20% 92%;
 
-    --popover: 220 25% 12%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 220 25% 11%;
+    --popover-foreground: 210 20% 92%;
 
     --primary: 35 95% 55%;
-    --primary-foreground: 220 60% 10%;
+    --primary-foreground: 220 60% 8%;
 
-    --secondary: 220 25% 18%;
-    --secondary-foreground: 210 20% 90%;
+    --secondary: 220 25% 16%;
+    --secondary-foreground: 210 20% 85%;
 
-    --muted: 220 20% 20%;
-    --muted-foreground: 210 15% 60%;
+    --muted: 220 20% 18%;
+    --muted-foreground: 210 15% 65%;
 
     --accent: 35 95% 55%;
-    --accent-foreground: 220 60% 10%;
+    --accent-foreground: 220 60% 8%;
 
-    --destructive: 0 62.8% 45%;
+    --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 20%;
-    --input: 220 20% 20%;
+    --border: 220 20% 22%;
+    --input: 220 20% 22%;
     --ring: 35 95% 55%;
 
-    --sidebar-background: 220 30% 10%;
-    --sidebar-foreground: 210 20% 90%;
+    /* Success/Info colors for dark mode */
+    --success: 142 70% 45%;
+    --success-foreground: 0 0% 100%;
+    --info: 200 80% 55%;
+    --info-foreground: 0 0% 100%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 220 60% 8%;
+
+    --sidebar-background: 220 30% 9%;
+    --sidebar-foreground: 210 20% 88%;
     --sidebar-primary: 35 95% 55%;
-    --sidebar-primary-foreground: 220 60% 10%;
-    --sidebar-accent: 220 25% 15%;
-    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-primary-foreground: 220 60% 8%;
+    --sidebar-accent: 220 25% 14%;
+    --sidebar-accent-foreground: 210 20% 88%;
     --sidebar-border: 220 20% 18%;
     --sidebar-ring: 35 95% 55%;
   }
