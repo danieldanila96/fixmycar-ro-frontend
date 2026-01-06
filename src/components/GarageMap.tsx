@@ -292,8 +292,14 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
 
   if (!mapboxToken) {
     return (
-      <div className="w-full h-[500px] bg-muted rounded-xl flex items-center justify-center">
-        <p className="text-muted-foreground">Harta nu este disponibilă. Verifică configurația Mapbox.</p>
+      <div className="w-full h-[500px] bg-muted rounded-xl flex flex-col items-center justify-center gap-4">
+        <p className="text-muted-foreground">Harta nu este disponibilă momentan.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 text-sm font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded"
+        >
+          Reîncearcă
+        </button>
       </div>
     );
   }

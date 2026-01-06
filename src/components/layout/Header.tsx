@@ -189,6 +189,16 @@ const Header = () => {
                       </Badge>
                     )}
                   </Button>
+                  {userType === 'customer' && (
+                    <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/programari'); }}>
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      Programările mele
+                    </Button>
+                  )}
+                  <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/notificari'); }}>
+                    <Bell className="mr-2 h-4 w-4" />
+                    Setări notificări
+                  </Button>
                   <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/profil'); }}>
                     <User className="mr-2 h-4 w-4" />
                     Profil
