@@ -164,13 +164,22 @@ const Auth = () => {
     });
     
     if (error) {
-      let message = "A apărut o eroare la înregistrare.";
-      if (error.message.includes("already registered")) {
-        message = "Acest email este deja înregistrat. Încercați să vă autentificați.";
+      let message = "A apărut o eroare la înregistrare. Vă rugăm să încercați din nou.";
+      
+      if (error.message.includes("already registered") || error.message.includes("User already registered")) {
+        message = "Acest email este deja înregistrat. Vă rugăm să folosiți opțiunea de autentificare sau să recuperați parola.";
+      } else if (error.message.includes("Password should be")) {
+        message = "Parola trebuie să conțină cel puțin 6 caractere.";
+      } else if (error.message.includes("Invalid email")) {
+        message = "Adresa de email introdusă nu este validă.";
+      } else if (error.message.includes("rate limit") || error.message.includes("too many requests")) {
+        message = "Prea multe încercări. Vă rugăm să așteptați câteva minute înainte de a încerca din nou.";
+      } else if (error.message.includes("network") || error.message.includes("fetch")) {
+        message = "Eroare de conexiune. Vă rugăm să verificați conexiunea la internet și să încercați din nou.";
       }
       
       toast({
-        title: "Eroare la înregistrare",
+        title: "Înregistrare nereușită",
         description: message,
         variant: "destructive",
       });

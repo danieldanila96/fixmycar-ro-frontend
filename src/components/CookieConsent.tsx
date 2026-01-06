@@ -43,6 +43,18 @@ export const CookieConsent = () => {
     setIsVisible(false);
   };
 
+  const rejectAll = () => {
+    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify({
+      version: COOKIE_CONSENT_VERSION,
+      accepted: false,
+      functional: false,
+      analytics: false,
+      marketing: false,
+      timestamp: new Date().toISOString(),
+    }));
+    setIsVisible(false);
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -51,7 +63,7 @@ export const CookieConsent = () => {
         <div className="flex flex-col gap-4">
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-full bg-primary/10 flex-shrink-0">
-              <Cookie className="h-6 w-6 text-primary" />
+              <Cookie className="h-6 w-6 text-primary" aria-hidden="true" />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-lg mb-2">Folosim cookie-uri 🍪</h3>
@@ -71,9 +83,10 @@ export const CookieConsent = () => {
               variant="ghost"
               size="icon"
               className="flex-shrink-0 -mt-2 -mr-2"
-              onClick={acceptEssential}
+              onClick={rejectAll}
+              aria-label="Închide și refuză cookie-urile"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
 
@@ -84,18 +97,21 @@ export const CookieConsent = () => {
                 className="hover:text-primary transition-colors flex items-center gap-1"
               >
                 Politica de Confidențialitate
-                <ExternalLink className="h-3 w-3" />
+                <ExternalLink className="h-3 w-3" aria-hidden="true" />
               </Link>
-              <span>•</span>
+              <span aria-hidden="true">•</span>
               <Link 
                 to="/cookies" 
                 className="hover:text-primary transition-colors flex items-center gap-1"
               >
                 Politica Cookie-uri
-                <ExternalLink className="h-3 w-3" />
+                <ExternalLink className="h-3 w-3" aria-hidden="true" />
               </Link>
             </div>
             <div className="flex gap-3">
+              <Button variant="ghost" onClick={rejectAll}>
+                Refuză toate
+              </Button>
               <Button variant="outline" onClick={acceptEssential}>
                 Doar esențiale
               </Button>

@@ -417,11 +417,16 @@ const AdminKYC = () => {
         </Card>
 
         {/* Review Dialog */}
-        <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+        <Dialog open={reviewDialogOpen} onOpenChange={(open) => {
+          if (!open) {
+            setRejectionReason('');
+          }
+          setReviewDialogOpen(open);
+        }}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
+                <Shield className="h-5 w-5" aria-hidden="true" />
                 Verificare KYC - {selectedGarage?.business_name}
               </DialogTitle>
               <DialogDescription>
