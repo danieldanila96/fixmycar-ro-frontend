@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -105,7 +105,7 @@ const SearchGarages = () => {
     },
   });
 
-  const { data: favorites = [] } = useQuery({
+  const { data: favorites = [], refetch: refetchFavorites } = useQuery({
     queryKey: ['user-favorites-list'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -119,7 +119,15 @@ const SearchGarages = () => {
       if (error) throw error;
       return data.map(f => f.garage_id);
     },
+    staleTime: 0, // Always refetch to get latest favorites
   });
+
+  // Auto-refetch favorites when filter is toggled on
+  useEffect(() => {
+    if (showFavoritesOnly) {
+      refetchFavorites();
+    }
+  }, [showFavoritesOnly, refetchFavorites]);
 
   const filteredGarages = useMemo(() => {
     if (!garages) return [];
@@ -433,9 +441,13 @@ const SearchGarages = () => {
             <Card>
               <CardContent className="py-16 text-center">
                 <Building2 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Niciun service găsit</h3>
+                <h3 className="text-xl font-semibold mb-2">
+                  {showFavoritesOnly ? 'Nu ai service-uri în favorite' : 'Niciun service găsit'}
+                </h3>
                 <p className="text-muted-foreground mb-4">
-                  Nu am găsit service-uri care să corespundă criteriilor tale.
+                  {showFavoritesOnly 
+                    ? 'Adaugă service-uri la favorite pentru a le vedea aici.' 
+                    : 'Nu am găsit service-uri care să corespundă criteriilor tale.'}
                 </p>
                 {hasActiveFilters && (
                   <Button variant="outline" onClick={clearFilters}>
