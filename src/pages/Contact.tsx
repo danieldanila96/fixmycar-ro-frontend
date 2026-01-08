@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import SEO from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -92,6 +93,10 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO 
+        title="Contact"
+        description="Contactează echipa FixMyCar.ro pentru întrebări, sugestii sau asistență. Suntem aici să te ajutăm să găsești cel mai bun service auto."
+      />
       <Header />
       <main className="flex-1 pt-20">
         {/* Hero Section */}

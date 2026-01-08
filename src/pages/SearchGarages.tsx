@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import SEO from '@/components/SEO';
 import GarageMap from '@/components/GarageMap';
 import FavoriteButton from '@/components/FavoriteButton';
 import StarRating from '@/components/StarRating';
@@ -192,6 +193,10 @@ const SearchGarages = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO 
+        title="Caută Service Auto"
+        description="Găsește și compară service-uri auto verificate în zona ta. Filtrează după specialitate, citește recenzii și vezi locația pe hartă."
+      />
       <Header />
       <main className="flex-1 pt-20 pb-8">
         <div className="container mx-auto px-4">
