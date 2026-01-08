@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { 
@@ -134,6 +135,10 @@ const ForGarages = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Pentru Service-uri Auto"
+        description="Alătură-te FixMyCar.ro și conectează-te cu mii de clienți din zona ta. Înregistrare gratuită, administrare ușoară și creștere garantată pentru afacerea ta."
+      />
       <Header />
       <main>
         {/* Hero Section */}

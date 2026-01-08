@@ -1,5 +1,6 @@
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import SEO from '@/components/SEO';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -56,6 +57,10 @@ const HowItWorks = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO 
+        title="Cum Funcționează"
+        description="Află cum să găsești cel mai bun service auto în 4 pași simpli: descrie problema, primește oferte, compară prețuri și programează-te online."
+      />
       <Header />
       <main className="flex-1 pt-20">
         {/* Hero Section */}
