@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { X, Cookie, ExternalLink } from 'lucide-react';
@@ -7,8 +7,19 @@ import { Link } from 'react-router-dom';
 const COOKIE_CONSENT_KEY = 'cookie-consent-accepted';
 const COOKIE_CONSENT_VERSION = '1.0';
 
+// Custom event for reopening cookie settings
+const COOKIE_SETTINGS_EVENT = 'open-cookie-settings';
+
+export const openCookieSettings = () => {
+  window.dispatchEvent(new CustomEvent(COOKIE_SETTINGS_EVENT));
+};
+
 export const CookieConsent = () => {
   const [isVisible, setIsVisible] = useState(false);
+
+  const showBanner = useCallback(() => {
+    setIsVisible(true);
+  }, []);
 
   useEffect(() => {
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
@@ -18,6 +29,12 @@ export const CookieConsent = () => {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  // Listen for custom event to reopen settings
+  useEffect(() => {
+    window.addEventListener(COOKIE_SETTINGS_EVENT, showBanner);
+    return () => window.removeEventListener(COOKIE_SETTINGS_EVENT, showBanner);
+  }, [showBanner]);
 
   const acceptAll = () => {
     localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify({
@@ -62,8 +79,8 @@ export const CookieConsent = () => {
       <Card className="max-w-4xl mx-auto p-6 shadow-2xl border-2">
         <div className="flex flex-col gap-4">
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-full bg-primary/10 flex-shrink-0">
-              <Cookie className="h-6 w-6 text-primary" aria-hidden="true" />
+            <div className="p-3 rounded-full bg-primary/10 flex-shrink-0" aria-hidden="true">
+              <Cookie className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-lg mb-2">Folosim cookie-uri 🍪</h3>

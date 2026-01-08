@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Car, Mail, Phone, MapPin } from "lucide-react";
+import { Car, Mail, Phone, MapPin, Cookie } from "lucide-react";
+import { openCookieSettings } from "@/components/CookieConsent";
 
 const Footer = () => {
   return (
@@ -48,6 +49,15 @@ const Footer = () => {
                 >
                   Termeni și Condiții
                 </Link>
+              </li>
+              <li>
+                <button
+                  onClick={openCookieSettings}
+                  className="text-primary-foreground/70 hover:text-accent text-sm transition-colors flex items-center gap-1.5"
+                >
+                  <Cookie className="w-3.5 h-3.5" aria-hidden="true" />
+                  Setări Cookie-uri
+                </button>
               </li>
             </ul>
           </div>
