@@ -16,9 +16,13 @@ import {
   Clock,
   AlertTriangle,
   Loader2,
-  Shield,
-  Trash2
+  Shield
 } from 'lucide-react';
+import { 
+  validateKYCFile, 
+  KYC_ALLOWED_EXTENSIONS, 
+  KYC_MAX_FILE_SIZE 
+} from '@/lib/validation';
 
 interface DocumentType {
   id: string;
@@ -150,24 +154,16 @@ export const KYCDocumentUpload = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    // Use centralized validation
+    const validation = validateKYCFile(file);
+    if (!validation.valid) {
       toast({
-        title: 'Fișier prea mare',
-        description: 'Dimensiunea maximă permisă este 10MB.',
+        title: 'Fișier invalid',
+        description: validation.error,
         variant: 'destructive'
       });
-      return;
-    }
-
-    // Validate file type
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: 'Tip fișier invalid',
-        description: 'Sunt acceptate doar PDF, JPG, PNG și WebP.',
-        variant: 'destructive'
-      });
+      // Reset input
+      e.target.value = '';
       return;
     }
 
@@ -364,6 +360,9 @@ export const KYCDocumentUpload = ({
             <strong>Important:</strong> Documentele vor fi verificate în maxim 48 de ore lucrătoare. 
             Veți primi o notificare când verificarea este finalizată. 
             Platforma nu va procesa plăți până când verificarea KYC nu este completă.
+          </p>
+          <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
+            Formate acceptate: {KYC_ALLOWED_EXTENSIONS.join(', ')} • Max {KYC_MAX_FILE_SIZE / 1024 / 1024}MB per fișier
           </p>
         </div>
       </CardContent>

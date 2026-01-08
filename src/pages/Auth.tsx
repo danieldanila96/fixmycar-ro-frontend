@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { Car, Wrench, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { isValidRomanianPhone, sanitizePhoneInput, isValidEmail } from '@/lib/validation';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -40,13 +41,17 @@ const Auth = () => {
   }, [user, loading, navigate]);
 
   const validateEmail = (email: string) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
+    return isValidEmail(email);
   };
 
-  const validatePhone = (phone: string) => {
-    const re = /^[0-9]{10}$/;
-    return re.test(phone.replace(/\s/g, ''));
+  const validatePhone = (phoneNumber: string) => {
+    return isValidRomanianPhone(phoneNumber);
+  };
+
+  const handlePhoneChange = (value: string) => {
+    // Only allow digits, +, and spaces for formatting
+    const sanitized = value.replace(/[^\d+\s]/g, '');
+    setPhone(sanitized);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -379,9 +384,11 @@ const Auth = () => {
                         type="tel"
                         placeholder="0722 123 456"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => handlePhoneChange(e.target.value)}
+                        pattern="[0-9+\s]*"
                         required
                       />
+                      <p className="text-xs text-muted-foreground">Format: 07XX XXX XXX</p>
                     </div>
                     
                     <div className="space-y-2">
