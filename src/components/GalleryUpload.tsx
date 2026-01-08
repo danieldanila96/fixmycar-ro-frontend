@@ -3,13 +3,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, X, Loader2, Image as ImageIcon } from 'lucide-react';
-
+import { LazyImage } from '@/components/LazyImage';
+import { compressImage, generateGalleryAltText } from '@/lib/imageUtils';
 interface GalleryUploadProps {
   userId: string;
   images: string[];
   onImagesChange: (images: string[]) => void;
   isEditing: boolean;
   maxImages?: number;
+  businessName?: string;
 }
 
 export const GalleryUpload = ({ 
@@ -17,7 +19,8 @@ export const GalleryUpload = ({
   images, 
   onImagesChange, 
   isEditing,
-  maxImages = 10 
+  maxImages = 10,
+  businessName,
 }: GalleryUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
@@ -51,22 +54,29 @@ export const GalleryUpload = ({
           continue;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
+        if (file.size > 10 * 1024 * 1024) {
           toast({
             title: 'Fișier prea mare',
-            description: 'Imaginile trebuie să fie sub 5MB.',
+            description: 'Imaginile trebuie să fie sub 10MB.',
             variant: 'destructive',
           });
           continue;
         }
 
-        const fileExt = file.name.split('.').pop();
+        // Compress image before upload
+        const compressedFile = await compressImage(file, {
+          maxWidth: 1920,
+          maxHeight: 1080,
+          quality: 0.85,
+        });
+
+        const fileExt = compressedFile.type === 'image/jpeg' ? 'jpg' : file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `${userId}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('garage-gallery')
-          .upload(filePath, file);
+          .upload(filePath, compressedFile);
 
         if (uploadError) throw uploadError;
 
@@ -148,10 +158,11 @@ export const GalleryUpload = ({
             key={index} 
             className="relative aspect-square rounded-lg overflow-hidden border border-border group"
           >
-            <img
+            <LazyImage
               src={url}
-              alt={`Galerie ${index + 1}`}
+              alt={generateGalleryAltText(index, businessName)}
               className="w-full h-full object-cover"
+              containerClassName="w-full h-full"
             />
             {isEditing && (
               <button
