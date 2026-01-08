@@ -36,9 +36,9 @@
     --secondary: 210 20% 94%;
     --secondary-foreground: 220 30% 18%;
 
-    /* Improved muted contrast */
+    /* Improved muted contrast - WCAG AA compliant (4.5:1+) */
     --muted: 210 15% 92%;
-    --muted-foreground: 220 15% 38%;
+    --muted-foreground: 220 20% 32%;
 
     /* Warm Amber Accent - with high contrast foreground */
     --accent: 35 95% 50%;
@@ -109,7 +109,7 @@
     --secondary-foreground: 210 20% 85%;
 
     --muted: 220 20% 18%;
-    --muted-foreground: 210 15% 65%;
+    --muted-foreground: 210 20% 72%;
 
     --accent: 35 95% 55%;
     --accent-foreground: 220 60% 8%;
@@ -155,6 +155,18 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-display font-bold tracking-tight;
+  }
+
+  /* Improved placeholder contrast for WCAG AA */
+  ::placeholder {
+    color: hsl(var(--muted-foreground));
+    opacity: 1;
+  }
+
+  /* Improved disabled state contrast */
+  :disabled,
+  [disabled] {
+    opacity: 0.6;
   }
 }
 
