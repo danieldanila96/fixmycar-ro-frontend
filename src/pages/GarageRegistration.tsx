@@ -14,6 +14,7 @@ import {
   CheckCircle2, Eye, EyeOff, Shield, MapPin, Phone, Mail, User
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { isValidRomanianPhone } from '@/lib/validation';
 
 const ROMANIAN_COUNTIES = [
   'Alba', 'Arad', 'Argeș', 'Bacău', 'Bihor', 'Bistrița-Năsăud', 'Botoșani', 
@@ -92,8 +93,8 @@ const GarageRegistration = () => {
       toast({ title: "Email invalid", variant: "destructive" });
       return false;
     }
-    if (!/^[0-9]{10}$/.test(phone.replace(/\s/g, ''))) {
-      toast({ title: "Telefon invalid (10 cifre)", variant: "destructive" });
+    if (!isValidRomanianPhone(phone)) {
+      toast({ title: "Telefon invalid", description: "Formatul corect: 07XX XXX XXX", variant: "destructive" });
       return false;
     }
     if (password.length < 6) {
@@ -387,8 +388,10 @@ const GarageRegistration = () => {
                       type="tel"
                       placeholder="0722 123 456"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(e.target.value.replace(/[^\d+\s]/g, ''))}
+                      pattern="[0-9+\s]*"
                     />
+                    <p className="text-xs text-muted-foreground">Format: 07XX XXX XXX</p>
                   </div>
                 </div>
                 
