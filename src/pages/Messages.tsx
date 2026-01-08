@@ -220,10 +220,27 @@ const Messages = () => {
     };
   }, [conversationId, queryClient]);
 
-  // Scroll to bottom when new messages arrive
+  // Scroll to bottom on initial load and when new messages arrive
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    // Use requestAnimationFrame to ensure DOM is updated
+    requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
+    });
+  }, []);
+
+  // Initial scroll when conversation loads (instant)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (messages && messages.length > 0 && !messagesLoading) {
+      scrollToBottom('instant');
+    }
+  }, [conversationId, messagesLoading]); // Only on conversation change
+
+  // Smooth scroll when new messages arrive
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      scrollToBottom('smooth');
+    }
+  }, [messages?.length, pendingMessages.length, scrollToBottom]);
 
   // Mark messages as read
   useEffect(() => {
