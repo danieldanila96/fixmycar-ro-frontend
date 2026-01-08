@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NotificationProvider } from "@/components/NotificationProvider";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import CookieConsent from "@/components/CookieConsent";
 import Index from "./pages/Index";
 import RequestQuote from "./pages/RequestQuote";
@@ -48,37 +49,44 @@ const App = () => (
         <BrowserRouter>
           <NotificationProvider>
             <Routes>
+            {/* Public routes */}
             <Route path="/" element={<Index />} />
-            <Route path="/cerere" element={<RequestQuote />} />
             <Route path="/autentificare" element={<Auth />} />
             <Route path="/am-uitat-parola" element={<ForgotPassword />} />
             <Route path="/reseteaza-parola" element={<ResetPassword />} />
-            <Route path="/contul-meu" element={<Dashboard />} />
-            <Route path="/cereri/:id" element={<JobDetails />} />
-            <Route path="/cereri/:jobId/recenzie" element={<ReviewPage />} />
-            <Route path="/service" element={<GarageDashboard />} />
-            <Route path="/service/cereri/:id" element={<GarageJobDetails />} />
-            <Route path="/service/:garageId" element={<GaragePublicProfile />} />
-            <Route path="/cauta-service" element={<SearchGarages />} />
-            <Route path="/profil" element={<Profile />} />
-<Route path="/cum-functioneaza" element={<HowItWorks />} />
+            <Route path="/cum-functioneaza" element={<HowItWorks />} />
             <Route path="/pentru-garaje" element={<ForGarages />} />
-            <Route path="/inregistrare-service" element={<GarageRegistration />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/termeni" element={<Terms />} />
             <Route path="/cookies" element={<CookiePolicy />} />
-            <Route path="/mesaje" element={<Messages />} />
-            <Route path="/mesaje/:conversationId" element={<Messages />} />
-            <Route path="/programari" element={<MyAppointments />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/notificari" element={<NotificationSettings />} />
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/kyc" element={<AdminKYC />} />
-            <Route path="/admin/utilizatori" element={<AdminUsers />} />
-            <Route path="/admin/cereri" element={<AdminJobs />} />
-            <Route path="/admin/recenzii" element={<AdminReviews />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/cauta-service" element={<SearchGarages />} />
+            <Route path="/service/:garageId" element={<GaragePublicProfile />} />
+            
+            {/* Protected customer routes */}
+            <Route path="/cerere" element={<ProtectedRoute><RequestQuote /></ProtectedRoute>} />
+            <Route path="/contul-meu" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/cereri/:id" element={<ProtectedRoute><JobDetails /></ProtectedRoute>} />
+            <Route path="/cereri/:jobId/recenzie" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
+            <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/mesaje" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/mesaje/:conversationId" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/programari" element={<ProtectedRoute><MyAppointments /></ProtectedRoute>} />
+            <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+            <Route path="/notificari" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+            <Route path="/inregistrare-service" element={<ProtectedRoute><GarageRegistration /></ProtectedRoute>} />
+            
+            {/* Protected garage routes */}
+            <Route path="/service" element={<ProtectedRoute requireGarage><GarageDashboard /></ProtectedRoute>} />
+            <Route path="/service/cereri/:id" element={<ProtectedRoute requireGarage><GarageJobDetails /></ProtectedRoute>} />
+            
+            {/* Admin routes */}
+            <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/kyc" element={<ProtectedRoute requireAdmin><AdminKYC /></ProtectedRoute>} />
+            <Route path="/admin/utilizatori" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/cereri" element={<ProtectedRoute requireAdmin><AdminJobs /></ProtectedRoute>} />
+            <Route path="/admin/recenzii" element={<ProtectedRoute requireAdmin><AdminReviews /></ProtectedRoute>} />
+            
+            {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
           <CookieConsent />
