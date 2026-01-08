@@ -8,6 +8,7 @@ import SEO from '@/components/SEO';
 import GarageMap from '@/components/GarageMap';
 import FavoriteButton from '@/components/FavoriteButton';
 import StarRating from '@/components/StarRating';
+import { LazyImage } from '@/components/LazyImage';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -337,10 +338,11 @@ const SearchGarages = () => {
                     {/* Gallery Preview */}
                     {garage.gallery_images && garage.gallery_images.length > 0 ? (
                       <div className="aspect-video relative overflow-hidden">
-                        <img
+                        <LazyImage
                           src={garage.gallery_images[0]}
-                          alt={garage.business_name || 'Service'}
+                          alt={`Imagine ${garage.business_name || 'Service auto'}`}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          containerClassName="w-full h-full"
                         />
                         {garage.gallery_images.length > 1 && (
                           <Badge 
@@ -362,10 +364,11 @@ const SearchGarages = () => {
                       <div className="flex items-start gap-3">
                         {/* Avatar */}
                         {garage.avatar_url ? (
-                          <img
+                          <LazyImage
                             src={garage.avatar_url}
-                            alt={garage.business_name || 'Service'}
-                            className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                            alt={`Logo ${garage.business_name || 'Service auto'}`}
+                            className="w-12 h-12 rounded-lg object-cover"
+                            containerClassName="w-12 h-12 rounded-lg flex-shrink-0"
                           />
                         ) : (
                           <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">

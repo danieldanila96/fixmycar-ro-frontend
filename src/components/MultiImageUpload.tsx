@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { compressImage, generateJobImageAltText } from '@/lib/imageUtils';
+import { LazyImage } from '@/components/LazyImage';
 
 interface MultiImageUploadProps {
   bucket: string;
@@ -13,6 +15,7 @@ interface MultiImageUploadProps {
   maxImages?: number;
   maxSizeMB?: number;
   className?: string;
+  carInfo?: string;
 }
 
 export const MultiImageUpload = ({
@@ -21,8 +24,9 @@ export const MultiImageUpload = ({
   onUpload,
   currentImages = [],
   maxImages = 5,
-  maxSizeMB = 5,
+  maxSizeMB = 10,
   className,
+  carInfo,
 }: MultiImageUploadProps) => {
   const [images, setImages] = useState<string[]>(currentImages);
   const [isUploading, setIsUploading] = useState(false);
@@ -69,12 +73,19 @@ export const MultiImageUpload = ({
       const uploadedUrls: string[] = [];
 
       for (const file of files) {
-        const fileExt = file.name.split('.').pop();
+        // Compress image before upload
+        const compressedFile = await compressImage(file, {
+          maxWidth: 1920,
+          maxHeight: 1080,
+          quality: 0.85,
+        });
+
+        const fileExt = compressedFile.type === 'image/jpeg' ? 'jpg' : file.name.split('.').pop();
         const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from(bucket)
-          .upload(fileName, file, { upsert: true });
+          .upload(fileName, compressedFile, { upsert: true });
 
         if (uploadError) throw uploadError;
 
@@ -121,10 +132,11 @@ export const MultiImageUpload = ({
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {images.map((url, index) => (
             <div key={index} className="relative group aspect-video">
-              <img
+              <LazyImage
                 src={url}
-                alt={`Imagine ${index + 1}`}
+                alt={generateJobImageAltText(index, carInfo)}
                 className="w-full h-full object-cover rounded-lg border"
+                containerClassName="w-full h-full rounded-lg"
               />
               <button
                 type="button"

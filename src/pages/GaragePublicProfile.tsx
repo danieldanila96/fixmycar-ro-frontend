@@ -6,6 +6,8 @@ import Footer from '@/components/layout/Footer';
 import FavoriteButton from '@/components/FavoriteButton';
 import AppointmentBooking from '@/components/AppointmentBooking';
 import StarRating from '@/components/StarRating';
+import { LazyImage } from '@/components/LazyImage';
+import { generateGalleryAltText } from '@/lib/imageUtils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -172,10 +174,11 @@ const GaragePublicProfile = () => {
                     {/* Avatar */}
                     <div className="flex-shrink-0">
                       {garage.avatar_url ? (
-                        <img
+                        <LazyImage
                           src={garage.avatar_url}
-                          alt={garage.business_name || 'Service'}
+                          alt={`Logo ${garage.business_name || 'Service auto'}`}
                           className="w-24 h-24 rounded-xl object-cover"
+                          containerClassName="w-24 h-24 rounded-xl"
                         />
                       ) : (
                         <div className="w-24 h-24 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -291,10 +294,11 @@ const GaragePublicProfile = () => {
                           key={index}
                           className="aspect-square rounded-lg overflow-hidden border border-border"
                         >
-                          <img
+                          <LazyImage
                             src={url}
-                            alt={`Galerie ${index + 1}`}
+                            alt={generateGalleryAltText(index, garage.business_name || undefined)}
                             className="w-full h-full object-cover hover:scale-105 transition-transform"
+                            containerClassName="w-full h-full"
                           />
                         </div>
                       ))}

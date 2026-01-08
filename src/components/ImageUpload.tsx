@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { compressImage } from '@/lib/imageUtils';
 
 interface ImageUploadProps {
   bucket: 'job-images' | 'avatars';
@@ -58,12 +59,19 @@ export const ImageUpload = ({
     setIsUploading(true);
 
     try {
-      const fileExt = file.name.split('.').pop();
+      // Compress image before upload
+      const compressedFile = await compressImage(file, {
+        maxWidth: 1920,
+        maxHeight: 1080,
+        quality: 0.85,
+      });
+
+      const fileExt = compressedFile.type === 'image/jpeg' ? 'jpg' : file.name.split('.').pop();
       const fileName = `${folder}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from(bucket)
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, compressedFile, { upsert: true });
 
       if (uploadError) throw uploadError;
 
@@ -104,7 +112,7 @@ export const ImageUpload = ({
         <div className="relative">
           <div className="w-24 h-24 rounded-full overflow-hidden bg-muted border-2 border-border">
             {preview ? (
-              <img src={preview} alt="Avatar" className="w-full h-full object-cover" />
+              <img src={preview} alt="Fotografie profil" loading="lazy" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <ImageIcon className="w-8 h-8 text-muted-foreground" />
@@ -157,7 +165,8 @@ export const ImageUpload = ({
         <div className="relative inline-block">
           <img
             src={preview}
-            alt="Previzualizare"
+            alt="Previzualizare imagine încărcată"
+            loading="lazy"
             className="max-w-full h-auto max-h-48 rounded-lg border"
           />
           <button
