@@ -157,7 +157,7 @@ export const ImageUpload = ({
         <div className="relative inline-block">
           <img
             src={preview}
-            alt="Preview"
+            alt="Previzualizare"
             className="max-w-full h-auto max-h-48 rounded-lg border"
           />
           <button

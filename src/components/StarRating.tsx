@@ -76,7 +76,7 @@ const StarRating = ({
               interactive && "cursor-pointer hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded-sm",
               !interactive && "cursor-default"
             )}
-            aria-label={interactive ? `Rate ${index + 1} out of ${maxRating}` : undefined}
+            aria-label={interactive ? `Acordă ${index + 1} din ${maxRating} stele` : undefined}
           >
             {/* Empty star (background) */}
             <Star

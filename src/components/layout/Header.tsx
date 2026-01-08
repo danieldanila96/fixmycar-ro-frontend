@@ -151,9 +151,9 @@ const Header = () => {
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="md:hidden p-2 text-foreground hover:bg-muted rounded-lg transition-colors"
-          aria-label="Toggle menu"
+          aria-label="Comută meniul"
         >
-          {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {isMenuOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
         </button>
       </div>
 

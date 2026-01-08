@@ -123,7 +123,7 @@ export const MultiImageUpload = ({
             <div key={index} className="relative group aspect-video">
               <img
                 src={url}
-                alt={`Upload ${index + 1}`}
+                alt={`Imagine ${index + 1}`}
                 className="w-full h-full object-cover rounded-lg border"
               />
               <button
