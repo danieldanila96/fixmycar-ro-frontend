@@ -59,7 +59,7 @@ const HowItWorksSection = () => {
               </span>
 
               {/* Icon */}
-              <div className="w-14 h-14 flex items-center justify-center rounded-xl bg-primary/5 text-primary mb-5 group-hover:bg-accent/10 group-hover:text-accent transition-colors">
+              <div className="w-14 h-14 flex items-center justify-center rounded-xl bg-primary/5 text-primary mb-5 group-hover:bg-accent/10 group-hover:text-accent transition-colors" aria-hidden="true">
                 <step.icon className="w-7 h-7" />
               </div>
 

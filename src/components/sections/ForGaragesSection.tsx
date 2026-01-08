@@ -50,7 +50,7 @@ const ForGaragesSection = () => {
             <div className="grid sm:grid-cols-2 gap-4 mb-8">
               {benefits.map((benefit) => (
                 <div key={benefit.title} className="flex gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-accent/10 text-accent">
+                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-accent/10 text-accent" aria-hidden="true">
                     <benefit.icon className="w-5 h-5" />
                   </div>
                   <div>
@@ -68,7 +68,7 @@ const ForGaragesSection = () => {
               onClick={() => navigate("/inregistrare-service")}
             >
               Înregistrează-ți Service-ul
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Button>
           </div>
 
