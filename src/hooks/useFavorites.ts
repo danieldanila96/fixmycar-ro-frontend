@@ -21,6 +21,8 @@ export const useFavorites = () => {
       return data.map(f => f.garage_id);
     },
     enabled: !!user,
+    staleTime: 0, // Always fetch fresh data
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
   });
 
   const addFavorite = useMutation({
@@ -32,13 +34,28 @@ export const useFavorites = () => {
         .insert({ user_id: user.id, garage_id: garageId });
       
       if (error) throw error;
+      return garageId;
+    },
+    onMutate: async (garageId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['favorites', user?.id] });
+      
+      // Snapshot previous value
+      const previousFavorites = queryClient.getQueryData<string[]>(['favorites', user?.id]) || [];
+      
+      // Optimistically update
+      queryClient.setQueryData(['favorites', user?.id], [...previousFavorites, garageId]);
+      
+      return { previousFavorites };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['favorites', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['user-favorites-list'] });
       toast.success('Adăugat la favorite');
     },
-    onError: () => {
+    onError: (_err, _garageId, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['favorites', user?.id], context?.previousFavorites);
       toast.error('Eroare la adăugarea în favorite');
     },
   });
@@ -54,13 +71,28 @@ export const useFavorites = () => {
         .eq('garage_id', garageId);
       
       if (error) throw error;
+      return garageId;
+    },
+    onMutate: async (garageId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['favorites', user?.id] });
+      
+      // Snapshot previous value
+      const previousFavorites = queryClient.getQueryData<string[]>(['favorites', user?.id]) || [];
+      
+      // Optimistically update
+      queryClient.setQueryData(['favorites', user?.id], previousFavorites.filter(id => id !== garageId));
+      
+      return { previousFavorites };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['favorites', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['user-favorites-list'] });
       toast.success('Eliminat din favorite');
     },
-    onError: () => {
+    onError: (_err, _garageId, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['favorites', user?.id], context?.previousFavorites);
       toast.error('Eroare la eliminarea din favorite');
     },
   });
