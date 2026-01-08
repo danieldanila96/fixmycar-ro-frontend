@@ -34,7 +34,7 @@ const CTASection = () => {
                   key={benefit}
                   className="flex items-center gap-2 text-primary-foreground/90"
                 >
-                  <CheckCircle className="w-5 h-5 text-accent" />
+                  <CheckCircle className="w-5 h-5 text-accent" aria-hidden="true" />
                   <span className="text-sm font-medium">{benefit}</span>
                 </div>
               ))}
@@ -43,7 +43,7 @@ const CTASection = () => {
             {/* CTA Button */}
             <Button variant="hero" size="xl" className="group" onClick={() => navigate("/cerere")}>
               Solicită Oferte Gratuit
-              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Button>
           </div>
         </div>

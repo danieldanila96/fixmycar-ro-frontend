@@ -53,7 +53,7 @@ const HeroSection = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-up animation-delay-300">
             <Button variant="hero" size="xl" className="group" onClick={() => navigate("/cerere")}>
               Solicită Oferte Gratuit
-              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Button>
             <a href="#cum-functioneaza">
               <Button variant="hero-outline" size="xl">
@@ -84,6 +84,7 @@ const HeroSection = () => {
           xmlns="http://www.w3.org/2000/svg"
           className="w-full h-auto"
           preserveAspectRatio="none"
+          aria-hidden="true"
         >
           <path
             d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V120Z"

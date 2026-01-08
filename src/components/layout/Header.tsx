@@ -67,7 +67,7 @@ const Header = () => {
       <div className="container flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary text-primary-foreground transition-transform group-hover:scale-105">
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary text-primary-foreground transition-transform group-hover:scale-105" aria-hidden="true">
             <Car className="w-5 h-5" />
           </div>
           <span className="font-display font-bold text-xl text-foreground">
@@ -94,28 +94,28 @@ const Header = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
-                  {userType === 'garage' ? <Wrench className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                  {userType === 'garage' ? <Wrench className="h-4 w-4" aria-hidden="true" /> : <User className="h-4 w-4" aria-hidden="true" />}
                   Contul meu
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={() => navigate(getDashboardPath())}>
-                  {userType === 'garage' ? <Wrench className="mr-2 h-4 w-4" /> : <User className="mr-2 h-4 w-4" />}
+                  {userType === 'garage' ? <Wrench className="mr-2 h-4 w-4" aria-hidden="true" /> : <User className="mr-2 h-4 w-4" aria-hidden="true" />}
                   {getDashboardLabel()}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/profil')}>
-                  <User className="mr-2 h-4 w-4" />
+                  <User className="mr-2 h-4 w-4" aria-hidden="true" />
                   Profil
                 </DropdownMenuItem>
                 {userType === 'customer' && (
                   <DropdownMenuItem onClick={() => navigate('/programari')}>
-                    <CalendarDays className="mr-2 h-4 w-4" />
+                    <CalendarDays className="mr-2 h-4 w-4" aria-hidden="true" />
                     Programările mele
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onClick={() => navigate('/mesaje')} className="flex items-center justify-between">
                   <span className="flex items-center">
-                    <MessageSquare className="mr-2 h-4 w-4" />
+                    <MessageSquare className="mr-2 h-4 w-4" aria-hidden="true" />
                     Mesaje
                   </span>
                   {unreadCount > 0 && (
@@ -125,12 +125,12 @@ const Header = () => {
                   )}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/notificari')}>
-                  <Bell className="mr-2 h-4 w-4" />
+                  <Bell className="mr-2 h-4 w-4" aria-hidden="true" />
                   Setări notificări
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
                   Deconectare
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -175,12 +175,12 @@ const Header = () => {
               {user ? (
                 <>
                   <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate(getDashboardPath()); }}>
-                    {userType === 'garage' ? <Wrench className="mr-2 h-4 w-4" /> : <User className="mr-2 h-4 w-4" />}
+                    {userType === 'garage' ? <Wrench className="mr-2 h-4 w-4" aria-hidden="true" /> : <User className="mr-2 h-4 w-4" aria-hidden="true" />}
                     {getDashboardLabel()}
                   </Button>
                   <Button variant="outline" className="w-full justify-between" onClick={() => { setIsMenuOpen(false); navigate('/mesaje'); }}>
                     <span className="flex items-center">
-                      <MessageSquare className="mr-2 h-4 w-4" />
+                      <MessageSquare className="mr-2 h-4 w-4" aria-hidden="true" />
                       Mesaje
                     </span>
                     {unreadCount > 0 && (
@@ -191,20 +191,20 @@ const Header = () => {
                   </Button>
                   {userType === 'customer' && (
                     <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/programari'); }}>
-                      <CalendarDays className="mr-2 h-4 w-4" />
+                      <CalendarDays className="mr-2 h-4 w-4" aria-hidden="true" />
                       Programările mele
                     </Button>
                   )}
                   <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/notificari'); }}>
-                    <Bell className="mr-2 h-4 w-4" />
+                    <Bell className="mr-2 h-4 w-4" aria-hidden="true" />
                     Setări notificări
                   </Button>
                   <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/profil'); }}>
-                    <User className="mr-2 h-4 w-4" />
+                    <User className="mr-2 h-4 w-4" aria-hidden="true" />
                     Profil
                   </Button>
                   <Button variant="ghost" className="w-full text-destructive" onClick={() => { setIsMenuOpen(false); handleSignOut(); }}>
-                    <LogOut className="mr-2 h-4 w-4" />
+                    <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
                     Deconectare
                   </Button>
                 </>

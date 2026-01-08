@@ -8,8 +8,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent text-accent-foreground">
+            <Link to="/" className="flex items-center gap-2" aria-label="FixMyCar.ro - Pagina principală">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent text-accent-foreground" aria-hidden="true">
                 <Car className="w-5 h-5" />
               </div>
               <span className="font-display font-bold text-xl">
@@ -69,16 +69,16 @@ const Footer = () => {
             <h4 className="font-display font-semibold text-lg mb-4">Contact</h4>
             <ul className="space-y-3">
               <li className="flex items-center gap-3 text-primary-foreground/70 text-sm">
-                <Mail className="w-4 h-4 text-accent" />
-                contact@fixmycar.ro
+                <Mail className="w-4 h-4 text-accent" aria-hidden="true" />
+                <span>contact@fixmycar.ro</span>
               </li>
               <li className="flex items-center gap-3 text-primary-foreground/70 text-sm">
-                <Phone className="w-4 h-4 text-accent" />
-                +40 721 234 567
+                <Phone className="w-4 h-4 text-accent" aria-hidden="true" />
+                <span>+40 721 234 567</span>
               </li>
               <li className="flex items-center gap-3 text-primary-foreground/70 text-sm">
-                <MapPin className="w-4 h-4 text-accent" />
-                București, România
+                <MapPin className="w-4 h-4 text-accent" aria-hidden="true" />
+                <span>București, România</span>
               </li>
             </ul>
           </div>
