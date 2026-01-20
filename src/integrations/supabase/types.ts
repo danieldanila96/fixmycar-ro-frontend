@@ -115,6 +115,121 @@ export type Database = {
           },
         ]
       }
+      car_engines: {
+        Row: {
+          created_at: string
+          cylinders: number | null
+          displacement_cc: number | null
+          fuel_type: string
+          id: string
+          model_id: string
+          name: string
+          power_hp: number | null
+          power_kw: number | null
+          torque_nm: number | null
+          transmission_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          cylinders?: number | null
+          displacement_cc?: number | null
+          fuel_type: string
+          id?: string
+          model_id: string
+          name: string
+          power_hp?: number | null
+          power_kw?: number | null
+          torque_nm?: number | null
+          transmission_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          cylinders?: number | null
+          displacement_cc?: number | null
+          fuel_type?: string
+          id?: string
+          model_id?: string
+          name?: string
+          power_hp?: number | null
+          power_kw?: number | null
+          torque_nm?: number | null
+          transmission_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "car_engines_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "car_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      car_makes: {
+        Row: {
+          country: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      car_models: {
+        Row: {
+          body_type: string | null
+          created_at: string
+          generation: string | null
+          id: string
+          make_id: string
+          name: string
+          year_end: number | null
+          year_start: number
+        }
+        Insert: {
+          body_type?: string | null
+          created_at?: string
+          generation?: string | null
+          id?: string
+          make_id: string
+          name: string
+          year_end?: number | null
+          year_start: number
+        }
+        Update: {
+          body_type?: string | null
+          created_at?: string
+          generation?: string | null
+          id?: string
+          make_id?: string
+          name?: string
+          year_end?: number | null
+          year_start?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "car_models_make_id_fkey"
+            columns: ["make_id"]
+            isOneToOne: false
+            referencedRelation: "car_makes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
