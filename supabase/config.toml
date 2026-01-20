@@ -13,10 +13,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.create-booking-payment]
-verify_jwt = true
+verify_jwt = false
 
 [functions.verify-booking-payment]
-verify_jwt = true
+verify_jwt = false
 
 [functions.send-itp-reminders]
 verify_jwt = false
