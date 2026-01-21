@@ -166,8 +166,30 @@ const ReviewPage = () => {
     );
   }
 
-  if (!user || !job) {
+  if (!user) {
     return null;
+  }
+
+  // Show error state instead of blank page when job not found
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <main className="flex-1 pt-20 md:pt-24">
+          <div className="container max-w-2xl py-8">
+            <Card>
+              <CardContent className="py-12 text-center">
+                <p className="text-muted-foreground">Cererea nu a fost găsită.</p>
+                <Button className="mt-4" onClick={() => navigate('/contul-meu')}>
+                  Înapoi la cereri
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   // Check if user owns this job
