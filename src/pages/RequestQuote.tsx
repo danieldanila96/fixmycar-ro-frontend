@@ -16,6 +16,7 @@ import { z } from "zod";
 import { MultiImageUpload } from "@/components/MultiImageUpload";
 import { VINInput } from "@/components/VINInput";
 import { TermsAcceptance } from "@/components/TermsAcceptance";
+import { CarSelector } from "@/components/CarSelector";
 
 const jobSchema = z.object({
   carMake: z.string().min(1, "Selectează marca").max(100),
@@ -76,8 +77,7 @@ const steps = [
   { id: 4, title: "Confirmare", icon: CheckCircle },
 ];
 
-const carMakes = ["Dacia", "Volkswagen", "Skoda", "Ford", "Opel", "Renault", "BMW", "Mercedes", "Audi", "Toyota", "Hyundai", "Kia", "Peugeot", "Citroën", "Fiat", "Altă marcă"];
-const fuelTypes = ["Benzină", "Diesel", "Hibrid", "Electric", "GPL"];
+// Car makes and fuel types are now loaded from database via CarSelector
 const serviceCategories = [
   { value: "revizie", label: "Revizie & Întreținere" },
   { value: "mecanica", label: "Mecanică generală" },
@@ -354,65 +354,22 @@ const RequestQuote = () => {
                   Detaliile mașinii tale
                 </h2>
                 
-                <div className="grid sm:grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="carMake">Marca *</Label>
-                    <Select value={formData.carMake} onValueChange={(v) => updateFormData("carMake", v)}>
-                      <SelectTrigger className={errors.carMake ? "border-destructive" : ""}>
-                        <SelectValue placeholder="Selectează marca" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {carMakes.map((make) => (
-                          <SelectItem key={make} value={make}>{make}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.carMake && <p className="text-sm text-destructive">{errors.carMake}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="carModel">Model *</Label>
-                    <Input
-                      id="carModel"
-                      placeholder="ex: Logan, Golf, Octavia"
-                      value={formData.carModel}
-                      onChange={(e) => updateFormData("carModel", e.target.value)}
-                      className={errors.carModel ? "border-destructive" : ""}
-                      maxLength={100}
-                    />
-                    {errors.carModel && <p className="text-sm text-destructive">{errors.carModel}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="carYear">Anul fabricației *</Label>
-                    <Select value={formData.carYear} onValueChange={(v) => updateFormData("carYear", v)}>
-                      <SelectTrigger className={errors.carYear ? "border-destructive" : ""}>
-                        <SelectValue placeholder="Selectează anul" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {generateYears().map((year) => (
-                          <SelectItem key={year} value={year}>{year}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.carYear && <p className="text-sm text-destructive">{errors.carYear}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="fuelType">Combustibil *</Label>
-                    <Select value={formData.fuelType} onValueChange={(v) => updateFormData("fuelType", v)}>
-                      <SelectTrigger className={errors.fuelType ? "border-destructive" : ""}>
-                        <SelectValue placeholder="Selectează combustibilul" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {fuelTypes.map((fuel) => (
-                          <SelectItem key={fuel} value={fuel}>{fuel}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.fuelType && <p className="text-sm text-destructive">{errors.fuelType}</p>}
-                  </div>
-                </div>
+                <CarSelector
+                  make={formData.carMake}
+                  model={formData.carModel}
+                  year={formData.carYear}
+                  fuelType={formData.fuelType}
+                  onMakeChange={(v) => updateFormData("carMake", v)}
+                  onModelChange={(v) => updateFormData("carModel", v)}
+                  onYearChange={(v) => updateFormData("carYear", v)}
+                  onFuelTypeChange={(v) => updateFormData("fuelType", v)}
+                  errors={{
+                    make: errors.carMake,
+                    model: errors.carModel,
+                    year: errors.carYear,
+                    fuelType: errors.fuelType,
+                  }}
+                />
 
                 {/* VIN/CIV Input */}
                 <div className="mt-6">
