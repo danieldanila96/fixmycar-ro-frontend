@@ -54,6 +54,7 @@ const GarageRegistration = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   
   // Step 1: Account Details
   const [fullName, setFullName] = useState('');
@@ -197,7 +198,7 @@ const GarageRegistration = () => {
     setIsSubmitting(true);
     
     try {
-      // Create the user account
+      // Create the user account - with email verification enabled, user won't be logged in immediately
       const { error: signUpError } = await signUp(email, password, {
         full_name: fullName,
         user_type: 'garage',
@@ -208,64 +209,27 @@ const GarageRegistration = () => {
         throw signUpError;
       }
 
-      // Wait for session to be established
-      const { data: { session } } = await supabase.auth.getSession();
+      // Store registration data in localStorage for completion after email verification
+      localStorage.setItem('garage_registration_pending', JSON.stringify({
+        businessName,
+        cui,
+        caenCode,
+        businessAddress,
+        city,
+        county,
+        description,
+        rarAuthorization,
+        selectedCategories,
+      }));
       
-      if (session?.user) {
-        // Update profile with business details
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            business_name: businessName,
-            cui: cui,
-            caen_code: caenCode,
-            business_address: businessAddress,
-            city: city,
-            county: county,
-            description: description,
-            rar_authorization: rarAuthorization,
-            rar_categories: selectedCategories,
-            kyc_status: 'documents_submitted',
-            kyc_submitted_at: new Date().toISOString(),
-          })
-          .eq('user_id', session.user.id);
-          
-        if (profileError) {
-          console.error('Profile update error:', profileError);
-        }
-
-        // Upload documents
-        for (const [docType, file] of Object.entries(documents)) {
-          if (file) {
-            const fileName = `${session.user.id}/${docType}_${Date.now()}.${file.name.split('.').pop()}`;
-            
-            const { error: uploadError } = await supabase.storage
-              .from('kyc-documents')
-              .upload(fileName, file);
-              
-            if (!uploadError) {
-              const { data: urlData } = supabase.storage
-                .from('kyc-documents')
-                .getPublicUrl(fileName);
-                
-              await supabase.from('garage_documents').insert({
-                garage_id: session.user.id,
-                document_type: docType,
-                file_name: file.name,
-                file_url: urlData.publicUrl,
-                status: 'pending',
-              });
-            }
-          }
-        }
-      }
-
+      // Store documents temporarily - they'll need to be re-uploaded after verification
+      // For now, show the email verification screen
+      setEmailSent(true);
+      
       toast({
-        title: "Înregistrare finalizată!",
-        description: "Contul a fost creat. Documentele vor fi verificate în 24-48 ore.",
+        title: "Verificați email-ul!",
+        description: "V-am trimis un link de confirmare pe adresa de email.",
       });
-      
-      navigate('/profil');
       
     } catch (error: any) {
       let message = "A apărut o eroare la înregistrare.";
@@ -302,6 +266,34 @@ const GarageRegistration = () => {
       </header>
 
       <main className="container py-8 max-w-3xl">
+        {/* Email Verification Screen */}
+        {emailSent ? (
+          <Card className="text-center py-12">
+            <CardContent className="space-y-6">
+              <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+                <Mail className="h-10 w-10 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold">Verificați email-ul</h2>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  V-am trimis un link de confirmare la <strong>{email}</strong>. 
+                  Faceți clic pe link pentru a vă activa contul.
+                </p>
+              </div>
+              <div className="bg-muted/50 p-4 rounded-lg max-w-md mx-auto">
+                <p className="text-sm text-muted-foreground">
+                  După confirmare, veți putea încărca documentele și finaliza înregistrarea service-ului.
+                </p>
+              </div>
+              <div className="pt-4">
+                <Button variant="outline" onClick={() => navigate('/autentificare')}>
+                  Mergi la autentificare
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
         {/* Progress Steps */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -692,6 +684,8 @@ const GarageRegistration = () => {
             Veți primi o notificare când contul este aprobat și puteți începe să primiți cereri de ofertă.
           </p>
         </div>
+          </>
+        )}
       </main>
     </div>
   );
