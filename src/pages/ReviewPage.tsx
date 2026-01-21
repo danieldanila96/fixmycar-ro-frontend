@@ -56,7 +56,7 @@ const ReviewPage = () => {
     }
   }, [user, authLoading, navigate]);
 
-  const { data: job, isLoading: jobLoading } = useQuery({
+  const { data: job, isLoading: jobLoading, isError: jobError } = useQuery({
     queryKey: ['review-job', jobId],
     queryFn: async () => {
       if (!jobId) throw new Error('No job ID');
@@ -71,9 +71,11 @@ const ReviewPage = () => {
       return data as Job;
     },
     enabled: !!jobId && !!user,
+    staleTime: 1000 * 60, // 1 minute - prevent re-fetching causing flicker
+    retry: 1, // Only retry once to avoid long loading states
   });
 
-  const { data: acceptedQuote } = useQuery({
+  const { data: acceptedQuote, isLoading: quoteLoading } = useQuery({
     queryKey: ['accepted-quote', jobId],
     queryFn: async () => {
       if (!jobId) return null;
@@ -100,6 +102,7 @@ const ReviewPage = () => {
       } as AcceptedQuote;
     },
     enabled: !!jobId && !!user,
+    staleTime: 1000 * 60,
   });
 
   const { data: existingReview } = useQuery({
@@ -158,7 +161,8 @@ const ReviewPage = () => {
     },
   });
 
-  if (authLoading || jobLoading) {
+  // Show loading while any critical data is loading
+  if (authLoading || jobLoading || quoteLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -170,8 +174,8 @@ const ReviewPage = () => {
     return null;
   }
 
-  // Show error state instead of blank page when job not found
-  if (!job) {
+  // Show error state instead of blank page when job not found or query failed
+  if (!job || jobError) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
@@ -179,7 +183,7 @@ const ReviewPage = () => {
           <div className="container max-w-2xl py-8">
             <Card>
               <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground">Cererea nu a fost găsită.</p>
+                <p className="text-muted-foreground">Cererea nu a fost găsită sau nu aveți acces.</p>
                 <Button className="mt-4" onClick={() => navigate('/contul-meu')}>
                   Înapoi la cereri
                 </Button>
