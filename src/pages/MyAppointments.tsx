@@ -130,14 +130,17 @@ const MyAppointments = () => {
     );
   }
 
+  // Get today's date in YYYY-MM-DD format for reliable comparison
+  const today = new Date().toISOString().split('T')[0];
+
   const upcomingAppointments = appointments?.filter(a => 
     a.status !== 'cancelled' && a.status !== 'completed' && 
-    new Date(a.appointment_date) >= new Date(new Date().toDateString())
+    a.appointment_date >= today
   ) || [];
 
   const pastAppointments = appointments?.filter(a => 
     a.status === 'completed' || a.status === 'cancelled' ||
-    new Date(a.appointment_date) < new Date(new Date().toDateString())
+    a.appointment_date < today
   ) || [];
 
   return (
