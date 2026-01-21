@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Car, Calendar, Trash2, Bell, AlertTriangle, CheckCircle, Pencil } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { ro } from 'date-fns/locale';
+import { isValidVIN, sanitizeVIN, isValidCIV, sanitizeCIV } from '@/lib/validation';
 
 interface ITPReminder {
   id: string;
@@ -51,6 +52,8 @@ const ITPRemindersManager = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingReminder, setEditingReminder] = useState<ITPReminder | null>(null);
   const [formData, setFormData] = useState<FormData>(emptyFormData);
+  const [vinError, setVinError] = useState<string | null>(null);
+  const [civError, setCivError] = useState<string | null>(null);
 
   const { data: reminders = [], isLoading } = useQuery({
     queryKey: ['itp-reminders', user?.id],
@@ -184,6 +187,32 @@ const ITPRemindersManager = () => {
     setIsDialogOpen(false);
     setEditingReminder(null);
     setFormData(emptyFormData);
+    setVinError(null);
+    setCivError(null);
+  };
+
+  const handleVinChange = (value: string) => {
+    const sanitized = sanitizeVIN(value);
+    setFormData(prev => ({ ...prev, vin: sanitized }));
+    
+    if (sanitized.length > 0 && sanitized.length !== 17) {
+      setVinError('VIN-ul trebuie să aibă exact 17 caractere');
+    } else if (sanitized.length === 17 && !isValidVIN(sanitized)) {
+      setVinError('VIN invalid. Nu poate conține literele I, O sau Q.');
+    } else {
+      setVinError(null);
+    }
+  };
+
+  const handleCivChange = (value: string) => {
+    const sanitized = sanitizeCIV(value);
+    setFormData(prev => ({ ...prev, civ: sanitized }));
+    
+    if (sanitized.length > 0 && !isValidCIV(sanitized)) {
+      setCivError('Format CIV: 1-2 litere urmate de 6-9 cifre (ex: B123456)');
+    } else {
+      setCivError(null);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -198,10 +227,20 @@ const ITPRemindersManager = () => {
       return;
     }
 
-    if (formData.vin.trim().length !== 17) {
+    if (!isValidVIN(formData.vin.trim())) {
       toast({
         title: 'VIN invalid',
-        description: 'VIN-ul trebuie să aibă exact 17 caractere.',
+        description: 'VIN-ul trebuie să aibă exact 17 caractere alfanumerice (fără I, O, Q).',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // CIV is optional, but if provided, must be valid
+    if (formData.civ.trim() && !isValidCIV(formData.civ.trim())) {
+      toast({
+        title: 'CIV invalid',
+        description: 'Formatul CIV: 1-2 litere urmate de 6-9 cifre (ex: B123456).',
         variant: 'destructive',
       });
       return;
@@ -303,25 +342,36 @@ const ITPRemindersManager = () => {
                   <Label htmlFor="vin">VIN (Serie Șasiu) *</Label>
                   <Input
                     id="vin"
-                    placeholder="17 caractere"
+                    placeholder="17 caractere alfanumerice"
                     value={formData.vin}
-                    onChange={(e) => setFormData(prev => ({ ...prev, vin: e.target.value.toUpperCase() }))}
+                    onChange={(e) => handleVinChange(e.target.value)}
                     maxLength={17}
                     required
+                    className={vinError ? 'border-destructive' : ''}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {formData.vin.length}/17 caractere
-                  </p>
+                  <div className="flex justify-between items-center">
+                    <p className={`text-xs ${vinError ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      {vinError || `${formData.vin.length}/17 caractere`}
+                    </p>
+                    {formData.vin.length === 17 && !vinError && (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="civ">CIV (Serie CI Vehicul)</Label>
                   <Input
                     id="civ"
-                    placeholder="Opțional"
+                    placeholder="ex: B123456 (opțional)"
                     value={formData.civ}
-                    onChange={(e) => setFormData(prev => ({ ...prev, civ: e.target.value.toUpperCase() }))}
+                    onChange={(e) => handleCivChange(e.target.value)}
+                    maxLength={11}
+                    className={civError ? 'border-destructive' : ''}
                   />
+                  {civError && (
+                    <p className="text-xs text-destructive">{civError}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
