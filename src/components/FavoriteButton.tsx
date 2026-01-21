@@ -40,12 +40,14 @@ const FavoriteButton = ({ garageId, variant = 'icon', className }: FavoriteButto
       onClick={handleClick}
       disabled={isToggling}
       className={cn(
-        'rounded-full',
+        'rounded-full min-w-[44px] min-h-[44px] w-11 h-11',
         isFav ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground',
         className
       )}
+      aria-label={isFav ? 'Elimină din favorite' : 'Adaugă la favorite'}
+      aria-pressed={isFav}
     >
-      <Heart className={cn('h-5 w-5', isFav && 'fill-current')} />
+      <Heart className={cn('h-6 w-6', isFav && 'fill-current')} />
     </Button>
   );
 };
