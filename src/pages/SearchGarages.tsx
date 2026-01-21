@@ -107,21 +107,31 @@ const SearchGarages = () => {
     },
   });
 
+  // Get current user for favorites query
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentUserId(data.user?.id || null);
+    });
+  }, []);
+
   const { data: favorites = [], refetch: refetchFavorites } = useQuery({
-    queryKey: ['user-favorites-list'],
+    queryKey: ['favorites', currentUserId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!currentUserId) return [];
       
       const { data, error } = await supabase
         .from('favorites')
         .select('garage_id')
-        .eq('user_id', user.id);
+        .eq('user_id', currentUserId);
       
       if (error) throw error;
       return data.map(f => f.garage_id);
     },
-    staleTime: 0, // Always refetch to get latest favorites
+    enabled: !!currentUserId,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 
   // Auto-refetch favorites when filter is toggled on

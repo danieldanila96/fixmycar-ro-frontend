@@ -57,6 +57,26 @@ export const sanitizePhoneInput = (phone: string): string => {
   return phone.replace(/[^\d+]/g, '');
 };
 
+// CIV Validation - Romanian vehicle ID card (Cartea de Identitate a Vehiculului)
+// Format: Usually a letter followed by 6-9 digits (e.g., B123456, AB1234567)
+export const civSchema = z.string()
+  .transform(val => val.toUpperCase().replace(/[^A-Z0-9]/g, ''))
+  .refine(val => {
+    // CIV format: 1-2 letters followed by 6-9 digits
+    return /^[A-Z]{1,2}\d{6,9}$/.test(val);
+  }, {
+    message: 'CIV invalid. Formatul corect: 1-2 litere urmate de 6-9 cifre (ex: B123456)'
+  });
+
+export const isValidCIV = (civ: string): boolean => {
+  const cleaned = civ.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return /^[A-Z]{1,2}\d{6,9}$/.test(cleaned);
+};
+
+export const sanitizeCIV = (civ: string): string => {
+  return civ.toUpperCase().replace(/[^A-Z0-9]/g, '');
+};
+
 // CUI Validation - Romanian company ID
 export const cuiSchema = z.string()
   .transform(val => val.toUpperCase().replace(/[^0-9RO]/g, ''))

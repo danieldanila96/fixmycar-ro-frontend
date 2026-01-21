@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -16,7 +17,9 @@ import {
   Clock,
   AlertTriangle,
   Loader2,
-  Shield
+  Shield,
+  Trash2,
+  RefreshCw
 } from 'lucide-react';
 import { 
   validateKYCFile, 
@@ -90,11 +93,59 @@ export const KYCDocumentUpload = ({
 }: KYCDocumentUploadProps) => {
   const { user } = useAuth();
   const [uploading, setUploading] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [cuiNumber, setCuiNumber] = useState('');
   const [caenCode, setCaenCode] = useState('4520');
 
   const getDocumentByType = (type: string) => {
     return existingDocuments.find(d => d.document_type === type);
+  };
+
+  const handleDeleteDocument = async (documentType: string) => {
+    const doc = getDocumentByType(documentType);
+    if (!doc || !user) return;
+
+    setDeleting(documentType);
+
+    try {
+      // Extract file path from URL
+      const urlParts = doc.file_url.split('/');
+      const filePath = `${user.id}/${urlParts[urlParts.length - 1]}`;
+
+      // Delete from storage
+      const { error: storageError } = await supabase.storage
+        .from('kyc-documents')
+        .remove([filePath]);
+
+      if (storageError) {
+        console.error('Storage delete error:', storageError);
+      }
+
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from('garage_documents')
+        .delete()
+        .eq('garage_id', user.id)
+        .eq('document_type', documentType);
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: 'Document șters',
+        description: 'Documentul a fost șters cu succes.',
+      });
+
+      onDocumentsChange?.();
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({
+        title: 'Eroare',
+        description: 'Nu s-a putut șterge documentul.',
+        variant: 'destructive'
+      });
+    } finally {
+      setDeleting(null);
+    }
   };
 
   const handleUpload = async (documentType: string, file: File) => {
@@ -280,6 +331,8 @@ export const KYCDocumentUpload = ({
             const existing = getDocumentByType(docType.id);
             const Icon = docType.icon;
             const isUploading = uploading === docType.id;
+            const isDeleting = deleting === docType.id;
+            const canModify = kycStatus !== 'approved' && existing?.status !== 'approved';
 
             return (
               <div 
@@ -313,6 +366,43 @@ export const KYCDocumentUpload = ({
                   <div className="flex items-center gap-2">
                     {existing && getStatusBadge(existing.status)}
                     
+                    {/* Delete button for non-approved documents */}
+                    {existing && canModify && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            disabled={isDeleting}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            {isDeleting ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Șterge documentul?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Ești sigur că vrei să ștergi "{docType.label}"? Va trebui să încarci din nou acest document.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Anulează</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDeleteDocument(docType.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Șterge
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                    
                     <label className="cursor-pointer">
                       <input
                         type="file"
@@ -335,7 +425,7 @@ export const KYCDocumentUpload = ({
                             </>
                           ) : existing ? (
                             <>
-                              <Upload className="h-4 w-4 mr-1" />
+                              <RefreshCw className="h-4 w-4 mr-1" />
                               Înlocuiește
                             </>
                           ) : (
