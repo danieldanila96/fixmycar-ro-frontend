@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import Supercluster from 'supercluster';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 
@@ -115,6 +116,7 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const clusterRef = useRef<Supercluster | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -131,7 +133,7 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
   }, []);
 
   // Get coordinates for a garage
-  const getCoordinates = (garage: GarageProfile): { coords: [number, number]; isExact: boolean } | null => {
+  const getCoordinates = useCallback((garage: GarageProfile): { coords: [number, number]; isExact: boolean } | null => {
     // Use exact GPS coordinates if available
     if (garage.latitude && garage.longitude) {
       return { coords: [garage.longitude, garage.latitude], isExact: true };
@@ -150,7 +152,144 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
     }
     
     return null;
-  };
+  }, []);
+
+  // Create cluster marker element
+  const createClusterMarker = useCallback((count: number) => {
+    const el = document.createElement('div');
+    el.className = 'cluster-marker';
+    
+    const size = count < 10 ? 40 : count < 50 ? 50 : 60;
+    
+    Object.assign(el.style, {
+      width: `${size}px`,
+      height: `${size}px`,
+      borderRadius: '50%',
+      background: 'hsl(var(--primary))',
+      color: 'white',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontWeight: '700',
+      fontSize: count < 10 ? '14px' : '16px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+      cursor: 'pointer',
+      border: '3px solid white'
+    });
+    
+    el.textContent = String(count);
+    el.setAttribute('aria-label', `Grup de ${count} service-uri auto`);
+    
+    return el;
+  }, []);
+
+  // Create individual garage marker
+  const createGarageMarker = useCallback((garage: GarageProfile) => {
+    const el = document.createElement('div');
+    el.className = 'garage-marker';
+    
+    const markerInner = document.createElement('div');
+    Object.assign(markerInner.style, {
+      background: 'hsl(var(--primary))',
+      color: 'white',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      fontWeight: '600',
+      fontSize: '12px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+      cursor: 'pointer',
+      whiteSpace: 'nowrap'
+    });
+    
+    const displayName = garage.business_name?.substring(0, 20) || 'Service';
+    markerInner.textContent = displayName + (garage.business_name && garage.business_name.length > 20 ? '...' : '');
+    el.appendChild(markerInner);
+
+    return el;
+  }, []);
+
+  // Create popup for a garage
+  const createGaragePopup = useCallback((garage: GarageProfile) => {
+    const popupContent = document.createElement('div');
+    popupContent.style.padding = '8px';
+    
+    const popupTitle = document.createElement('h3');
+    Object.assign(popupTitle.style, { margin: '0 0 8px', fontWeight: '600', fontSize: '14px' });
+    popupTitle.textContent = garage.business_name || 'Service auto';
+    popupContent.appendChild(popupTitle);
+    
+    const popupLocation = document.createElement('p');
+    Object.assign(popupLocation.style, { margin: '0 0 4px', fontSize: '12px', color: '#666' });
+    popupLocation.textContent = '📍 ' + [garage.city, garage.county].filter(Boolean).join(', ');
+    popupContent.appendChild(popupLocation);
+    
+    if (garage.average_rating) {
+      const popupRating = document.createElement('p');
+      Object.assign(popupRating.style, { margin: '0 0 8px', fontSize: '12px' });
+      popupRating.textContent = `⭐ ${garage.average_rating.toFixed(1)} (${garage.total_reviews} recenzii)`;
+      popupContent.appendChild(popupRating);
+    }
+    
+    const popupLink = document.createElement('a');
+    popupLink.href = `/service/${garage.user_id}`;
+    Object.assign(popupLink.style, { color: 'hsl(var(--primary))', fontSize: '12px', textDecoration: 'none' });
+    popupLink.textContent = 'Vezi detalii →';
+    popupContent.appendChild(popupLink);
+
+    return new mapboxgl.Popup({ offset: 25 }).setDOMContent(popupContent);
+  }, []);
+
+  // Update markers based on current map view
+  const updateMarkers = useCallback(() => {
+    if (!map.current || !clusterRef.current) return;
+
+    // Remove existing markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    const bounds = map.current.getBounds();
+    const zoom = Math.floor(map.current.getZoom());
+
+    const clusters = clusterRef.current.getClusters(
+      [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
+      zoom
+    );
+
+    clusters.forEach((cluster) => {
+      const [lng, lat] = cluster.geometry.coordinates as [number, number];
+
+      if (cluster.properties.cluster) {
+        // It's a cluster
+        const el = createClusterMarker(cluster.properties.point_count);
+        
+        el.addEventListener('click', () => {
+          const expansionZoom = clusterRef.current?.getClusterExpansionZoom(cluster.properties.cluster_id as number) || zoom + 2;
+          map.current?.flyTo({
+            center: [lng, lat],
+            zoom: Math.min(expansionZoom, 14)
+          });
+        });
+
+        const marker = new mapboxgl.Marker({ element: el })
+          .setLngLat([lng, lat])
+          .addTo(map.current!);
+
+        markersRef.current.push(marker);
+      } else {
+        // It's an individual garage
+        const garage = cluster.properties as GarageProfile;
+        const el = createGarageMarker(garage);
+        const popup = createGaragePopup(garage);
+
+        const marker = new mapboxgl.Marker({ element: el })
+          .setLngLat([lng, lat])
+          .setPopup(popup)
+          .addTo(map.current!);
+
+        markersRef.current.push(marker);
+      }
+    });
+  }, [createClusterMarker, createGarageMarker, createGaragePopup]);
 
   // Initialize map
   useEffect(() => {
@@ -182,27 +321,28 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
       'top-right'
     );
 
+    map.current.on('moveend', updateMarkers);
+    map.current.on('zoomend', updateMarkers);
+
     return () => {
       map.current?.remove();
     };
-  }, [mapboxToken, selectedCounty]);
+  }, [mapboxToken, selectedCounty, updateMarkers]);
 
-  // Update markers when garages change
+  // Update cluster data when garages change
   useEffect(() => {
     if (!map.current || !mapboxToken) return;
 
-    // Remove existing markers
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
-
-    // Add new markers
+    // Create GeoJSON features from garages
+    const features: GeoJSON.Feature<GeoJSON.Point>[] = [];
+    
     garages.forEach(garage => {
       const result = getCoordinates(garage);
       if (!result) return;
 
       const { coords, isExact } = result;
       
-      // Add small random offset only for non-exact coordinates to prevent overlapping
+      // Add small random offset only for non-exact coordinates
       const finalCoords: [number, number] = isExact 
         ? coords 
         : [
@@ -210,69 +350,33 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
             coords[1] + (Math.random() - 0.5) * 0.02,
           ];
 
-      // Create marker element using safe DOM methods (no innerHTML)
-      const el = document.createElement('div');
-      el.className = 'garage-marker';
-      
-      const markerInner = document.createElement('div');
-      Object.assign(markerInner.style, {
-        background: 'hsl(var(--primary))',
-        color: 'white',
-        padding: '8px 12px',
-        borderRadius: '8px',
-        fontWeight: '600',
-        fontSize: '12px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-        cursor: 'pointer',
-        whiteSpace: 'nowrap'
+      features.push({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: finalCoords
+        },
+        properties: { ...garage }
       });
-      // Use textContent to prevent XSS
-      const displayName = garage.business_name?.substring(0, 20) || 'Service';
-      markerInner.textContent = displayName + (garage.business_name && garage.business_name.length > 20 ? '...' : '');
-      el.appendChild(markerInner);
-
-      // Create popup using safe DOM methods
-      const popupContent = document.createElement('div');
-      popupContent.style.padding = '8px';
-      
-      const popupTitle = document.createElement('h3');
-      Object.assign(popupTitle.style, { margin: '0 0 8px', fontWeight: '600', fontSize: '14px' });
-      popupTitle.textContent = garage.business_name || 'Service auto';
-      popupContent.appendChild(popupTitle);
-      
-      const popupLocation = document.createElement('p');
-      Object.assign(popupLocation.style, { margin: '0 0 4px', fontSize: '12px', color: '#666' });
-      popupLocation.textContent = '📍 ' + [garage.city, garage.county].filter(Boolean).join(', ');
-      popupContent.appendChild(popupLocation);
-      
-      if (garage.average_rating) {
-        const popupRating = document.createElement('p');
-        Object.assign(popupRating.style, { margin: '0 0 8px', fontSize: '12px' });
-        popupRating.textContent = `⭐ ${garage.average_rating.toFixed(1)} (${garage.total_reviews} recenzii)`;
-        popupContent.appendChild(popupRating);
-      }
-      
-      const popupLink = document.createElement('a');
-      popupLink.href = `/service/${garage.user_id}`;
-      Object.assign(popupLink.style, { color: 'hsl(var(--primary))', fontSize: '12px', textDecoration: 'none' });
-      popupLink.textContent = 'Vezi detalii →';
-      popupContent.appendChild(popupLink);
-
-      const popup = new mapboxgl.Popup({ offset: 25 }).setDOMContent(popupContent);
-
-      const marker = new mapboxgl.Marker(el)
-        .setLngLat(finalCoords)
-        .setPopup(popup)
-        .addTo(map.current!);
-
-      markersRef.current.push(marker);
     });
 
+    // Initialize supercluster
+    clusterRef.current = new Supercluster({
+      radius: 60,
+      maxZoom: 14,
+      minZoom: 0
+    });
+
+    clusterRef.current.load(features);
+
+    // Update markers
+    updateMarkers();
+
     // Fit bounds to show all markers
-    if (markersRef.current.length > 0) {
+    if (features.length > 0) {
       const bounds = new mapboxgl.LngLatBounds();
-      markersRef.current.forEach(marker => {
-        bounds.extend(marker.getLngLat());
+      features.forEach(feature => {
+        bounds.extend(feature.geometry.coordinates as [number, number]);
       });
       
       map.current.fitBounds(bounds, {
@@ -280,7 +384,7 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
         maxZoom: 12,
       });
     }
-  }, [garages, mapboxToken]);
+  }, [garages, mapboxToken, getCoordinates, updateMarkers]);
 
   if (isLoading) {
     return (

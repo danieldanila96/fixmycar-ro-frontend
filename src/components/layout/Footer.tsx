@@ -51,6 +51,14 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link
+                  to="/confidentialitate"
+                  className="text-primary-foreground/70 hover:text-accent text-sm transition-colors"
+                >
+                  Politica de Confidențialitate
+                </Link>
+              </li>
+              <li>
                 <button
                   onClick={openCookieSettings}
                   className="text-primary-foreground/70 hover:text-accent text-sm transition-colors flex items-center gap-1.5"

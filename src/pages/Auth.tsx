@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { Car, Wrench, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { isValidRomanianPhone, sanitizePhoneInput, isValidEmail } from '@/lib/validation';
+import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -379,16 +380,23 @@ const Auth = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="phone">Telefon</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="0722 123 456"
-                        value={phone}
-                        onChange={(e) => handlePhoneChange(e.target.value)}
-                        pattern="[0-9+\s]*"
-                        required
-                      />
-                      <p className="text-xs text-muted-foreground">Format: 07XX XXX XXX</p>
+                      <div className="relative">
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="0722 123 456"
+                          value={phone}
+                          onChange={(e) => handlePhoneChange(e.target.value)}
+                          pattern="[0-9+\s]*"
+                          maxLength={15}
+                          required
+                          aria-describedby="phone-hint"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                          {phone.replace(/\D/g, '').length}/10
+                        </span>
+                      </div>
+                      <p id="phone-hint" className="text-xs text-muted-foreground">Format: 07XX XXX XXX (10 cifre)</p>
                     </div>
                     
                     <div className="space-y-2">
@@ -401,14 +409,19 @@ const Auth = () => {
                           value={signupPassword}
                           onChange={(e) => setSignupPassword(e.target.value)}
                           required
+                          aria-describedby="password-strength"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          aria-label={showPassword ? "Ascunde parola" : "Arată parola"}
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
+                      </div>
+                      <div id="password-strength">
+                        <PasswordStrengthIndicator password={signupPassword} />
                       </div>
                     </div>
 

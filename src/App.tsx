@@ -24,6 +24,7 @@ import HowItWorks from "./pages/HowItWorks";
 import ForGarages from "./pages/ForGarages";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import Messages from "./pages/Messages";
 import MyAppointments from "./pages/MyAppointments";
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/pentru-garaje" element={<ForGarages />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/termeni" element={<Terms />} />
+            <Route path="/confidentialitate" element={<PrivacyPolicy />} />
             <Route path="/cookies" element={<CookiePolicy />} />
             <Route path="/cauta-service" element={<SearchGarages />} />
             <Route path="/service/:garageId" element={<GaragePublicProfile />} />
