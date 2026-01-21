@@ -114,6 +114,15 @@ serve(async (req) => {
       .eq('id', quoteId)
       .single();
 
+    // Get job details for the appointment
+    const { data: jobDetails } = await supabaseClient
+      .from('jobs')
+      .select('user_id, category')
+      .eq('id', jobId)
+      .single();
+
+    const scheduledDate = new Date().toISOString().split('T')[0];
+
     const { error: bookingError } = await supabaseClient
       .from('bookings')
       .insert({
@@ -121,7 +130,7 @@ serve(async (req) => {
         quote_id: quoteId,
         payment_status: 'paid',
         payment_intent_id: session.payment_intent as string,
-        scheduled_date: new Date().toISOString().split('T')[0], // Default to today, can be updated later
+        scheduled_date: scheduledDate,
       });
 
     if (bookingError) {
@@ -129,6 +138,28 @@ serve(async (req) => {
       // Don't throw here, payment was successful
     } else {
       logStep("Booking record created");
+    }
+
+    // Also create an appointment record for "Programările mele" page
+    if (quote && jobDetails) {
+      const { error: appointmentError } = await supabaseClient
+        .from('appointments')
+        .insert({
+          customer_id: jobDetails.user_id,
+          garage_id: quote.garage_id,
+          job_id: jobId,
+          appointment_date: scheduledDate,
+          appointment_time: '10:00', // Default time, garage can update
+          service_type: jobDetails.category || 'altele',
+          status: 'confirmed',
+          notes: `Plată confirmată - ${quote.price} RON`,
+        });
+
+      if (appointmentError) {
+        logStep("Appointment creation error", { error: appointmentError });
+      } else {
+        logStep("Appointment record created");
+      }
     }
 
     // Send booking confirmation emails (non-blocking)
