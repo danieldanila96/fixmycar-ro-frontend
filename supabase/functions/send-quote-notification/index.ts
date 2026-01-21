@@ -138,7 +138,7 @@ const handler = async (req: Request): Promise<Response> => {
           ` : ''}
           
           <div style="text-align: center; margin-top: 30px;">
-            <a href="${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || 'https://app.lovable.app'}/jobs/${jobId}" 
+            <a href="https://fixmycar-ro-frontend.lovable.app/cereri/${jobId}" 
                style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
               Vezi Oferta
             </a>
