@@ -130,8 +130,9 @@ const MyAppointments = () => {
     );
   }
 
-  // Get today's date in YYYY-MM-DD format for reliable comparison
-  const today = new Date().toISOString().split('T')[0];
+  // Get today's date in YYYY-MM-DD format using local timezone for reliable comparison
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   const upcomingAppointments = appointments?.filter(a => 
     a.status !== 'cancelled' && a.status !== 'completed' && 
