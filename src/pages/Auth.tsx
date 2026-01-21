@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Car, Wrench, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Car, Wrench, Eye, EyeOff, ArrowLeft, Mail } from 'lucide-react';
 import { isValidRomanianPhone, sanitizePhoneInput, isValidEmail } from '@/lib/validation';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 
@@ -19,6 +19,8 @@ const Auth = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
   
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
@@ -190,11 +192,12 @@ const Auth = () => {
         variant: "destructive",
       });
     } else {
+      setRegisteredEmail(signupEmail);
+      setEmailSent(true);
       toast({
-        title: "Cont creat cu succes!",
-        description: "Bine ați venit pe FixMyCar.ro!",
+        title: "Verificați email-ul!",
+        description: "V-am trimis un link de confirmare pe adresa de email.",
       });
-      navigate('/');
     }
     
     setIsSubmitting(false);
@@ -230,6 +233,38 @@ const Auth = () => {
               </span>
             </Link>
           </div>
+
+          {/* Email Verification Screen */}
+          {emailSent ? (
+            <Card className="text-center py-8">
+              <CardContent className="space-y-6">
+                <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+                  <Mail className="h-10 w-10 text-primary" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-bold">Verificați email-ul</h2>
+                  <p className="text-muted-foreground">
+                    V-am trimis un link de confirmare la <strong>{registeredEmail}</strong>. 
+                    Faceți clic pe link pentru a vă activa contul.
+                  </p>
+                </div>
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    Nu ați primit email-ul? Verificați folderul de spam sau încercați din nou.
+                  </p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setEmailSent(false);
+                    setRegisteredEmail('');
+                  }}
+                >
+                  Înapoi la autentificare
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
 
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
@@ -456,6 +491,7 @@ const Auth = () => {
               </Card>
             </TabsContent>
           </Tabs>
+          )}
         </div>
       </main>
     </div>
