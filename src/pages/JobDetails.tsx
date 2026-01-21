@@ -168,8 +168,13 @@ const JobDetails = () => {
       return data.url;
     },
     onSuccess: (url) => {
-      // Redirect to Stripe checkout
-      window.location.href = url;
+      // Open Stripe checkout in a new tab (sandbox blocks external redirects)
+      window.open(url, '_blank');
+      setPayingQuoteId(null);
+      toast({
+        title: 'Redirecționare către plată',
+        description: 'S-a deschis pagina de plată Stripe într-o fereastră nouă.',
+      });
     },
     onError: (error) => {
       setPayingQuoteId(null);
