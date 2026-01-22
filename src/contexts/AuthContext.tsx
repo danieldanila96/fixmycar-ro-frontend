@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     password: string, 
     metadata?: { full_name?: string; user_type?: string; phone?: string }
   ) => {
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/activeaza-cont`;
     
     const { error } = await supabase.auth.signUp({
       email,

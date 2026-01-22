@@ -12,6 +12,7 @@ import RequestQuote from "./pages/RequestQuote";
 import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ActivateAccount from "./pages/ActivateAccount";
 import Dashboard from "./pages/Dashboard";
 import JobDetails from "./pages/JobDetails";
 import GarageDashboard from "./pages/GarageDashboard";
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="/autentificare" element={<Auth />} />
             <Route path="/am-uitat-parola" element={<ForgotPassword />} />
             <Route path="/reseteaza-parola" element={<ResetPassword />} />
+            <Route path="/activeaza-cont" element={<ActivateAccount />} />
             <Route path="/cum-functioneaza" element={<HowItWorks />} />
             <Route path="/pentru-garaje" element={<ForGarages />} />
             <Route path="/contact" element={<Contact />} />
