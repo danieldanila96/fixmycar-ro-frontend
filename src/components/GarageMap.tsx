@@ -22,6 +22,12 @@ interface GarageMapProps {
   selectedCounty?: string;
 }
 
+type GarageFeature = {
+  type: 'Feature';
+  geometry: { type: 'Point'; coordinates: [number, number] };
+  properties: GarageProfile;
+};
+
 // Romanian cities with approximate coordinates
 const CITY_COORDINATES: Record<string, [number, number]> = {
   'București': [26.1025, 44.4268],
