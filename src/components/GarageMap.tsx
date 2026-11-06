@@ -22,6 +22,12 @@ interface GarageMapProps {
   selectedCounty?: string;
 }
 
+type GarageFeature = {
+  type: 'Feature';
+  geometry: { type: 'Point'; coordinates: [number, number] };
+  properties: GarageProfile;
+};
+
 // Romanian cities with approximate coordinates
 const CITY_COORDINATES: Record<string, [number, number]> = {
   'București': [26.1025, 44.4268],
@@ -334,7 +340,7 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
     if (!map.current || !mapboxToken) return;
 
     // Create GeoJSON features from garages
-    const features: GeoJSON.Feature<GeoJSON.Point>[] = [];
+    const features: GarageFeature[] = [];
     
     garages.forEach(garage => {
       const result = getCoordinates(garage);

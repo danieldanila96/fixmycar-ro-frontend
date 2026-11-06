@@ -138,16 +138,12 @@ const AdminKYC = () => {
       status: KycStatus; 
       rejectionReason?: string 
     }) => {
-      const updateData: Record<string, unknown> = {
+      const updateData = {
         kyc_status: status,
         kyc_reviewed_at: new Date().toISOString(),
+        kyc_rejection_reason:
+          status === 'rejected' && rejectionReason ? rejectionReason : null,
       };
-      
-      if (status === 'rejected' && rejectionReason) {
-        updateData.kyc_rejection_reason = rejectionReason;
-      } else {
-        updateData.kyc_rejection_reason = null;
-      }
 
       const { error } = await supabase
         .from('profiles')
