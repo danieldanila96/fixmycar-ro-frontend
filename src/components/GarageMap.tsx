@@ -334,7 +334,7 @@ const GarageMap = ({ garages, selectedCounty }: GarageMapProps) => {
     if (!map.current || !mapboxToken) return;
 
     // Create GeoJSON features from garages
-    const features: GeoJSON.Feature<GeoJSON.Point>[] = [];
+    const features: GarageFeature[] = [];
     
     garages.forEach(garage => {
       const result = getCoordinates(garage);
